@@ -78,6 +78,15 @@
                         <button class="btn btn-icon" onclick="Game.adjustRounds(1)">+</button>
                     </div>
                 </div>
+                <div class="setup-section">
+                    <h3>Impostor Final Guess</h3>
+                    <p class="setup-hint">Let the impostor try to name the real word for bonus points</p>
+                    <label class="setting-toggle">
+                        <input type="checkbox" id="impostor-guess-toggle" checked>
+                        <span class="toggle-indicator" aria-hidden="true"></span>
+                        <span class="toggle-label">Allow final guess (+2 points if correct)</span>
+                    </label>
+                </div>
 
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
@@ -208,6 +217,35 @@
                 <div class="round-status" id="round-status">
                     Round 1 of 3
                 </div>
+                <div class="impostor-guess-section" id="impostor-guess-section">
+                    <h3>Impostor Final Guess</h3>
+                    <p class="guess-hint">Impostor can lock in a guess for the real word before you tally points.</p>
+                    <div class="guess-input-row">
+                        <input type="text" id="impostor-guess-input" class="guess-input" placeholder="Type their guess">
+                        <button class="btn btn-secondary" onclick="Game.submitImpostorGuess()" id="impostor-guess-btn">
+                            Check Guess
+                        </button>
+                    </div>
+                    <div class="guess-feedback" id="impostor-guess-feedback"></div>
+                </div>
+
+                <div class="scoreboard" id="scoreboard">
+                    <!-- Filled by JS -->
+                </div>
+                <div class="score-message" id="score-message"></div>
+
+                <div class="scoring-actions">
+                    <h3>Round Outcome</h3>
+                    <p>Select what happened after the vote.</p>
+                    <div class="scoring-buttons">
+                        <button class="btn btn-primary" onclick="Game.handleCrewWin()" id="crew-win-btn">
+                            Crew caught the impostor (+1 each)
+                        </button>
+                        <button class="btn btn-secondary" onclick="Game.handleImpostorWin()" id="impostor-win-btn">
+                            Impostor stayed hidden (+1 impostor)
+                        </button>
+                    </div>
+                </div>
 
                 <button class="btn btn-primary btn-large" onclick="Game.nextRound()" id="next-round-btn">
                     Next Round
@@ -234,6 +272,12 @@
                     <div class="stat-box">
                         <span class="stat-number" id="final-players">4</span>
                         <span class="stat-label">Players</span>
+                    </div>
+                </div>
+                <div class="final-scoreboard-card">
+                    <h3>Final Scores</h3>
+                    <div class="scoreboard compact" id="final-scoreboard">
+                        <!-- Filled by JS -->
                     </div>
                 </div>
 
