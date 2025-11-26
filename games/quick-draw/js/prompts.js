@@ -266,24 +266,24 @@ const PROMPTS = {
     }
 };
 
-// Stroke limits by difficulty
+// Stroke limits by difficulty - stricter limits for more challenge
 const DIFFICULTY_SETTINGS = {
     easy: {
         name: "Easy",
-        strokes: 15,
-        inkLimit: 3000, // pixels of ink
+        strokes: 10,
+        inkLimit: 1800, // pixels of ink
         time: 60
     },
     medium: {
         name: "Medium",
-        strokes: 10,
-        inkLimit: 2000,
+        strokes: 7,
+        inkLimit: 1200,
         time: 45
     },
     hard: {
         name: "Hard",
-        strokes: 6,
-        inkLimit: 1200,
+        strokes: 4,
+        inkLimit: 700,
         time: 30
     }
 };

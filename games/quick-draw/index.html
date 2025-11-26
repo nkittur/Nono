@@ -44,7 +44,7 @@
                 <div class="constraint-preview">
                     <div class="constraint-item">
                         <span class="constraint-icon">✏️</span>
-                        <span class="constraint-value">10</span>
+                        <span class="constraint-value">7</span>
                         <span class="constraint-label">Strokes</span>
                     </div>
                     <div class="constraint-item">
@@ -70,15 +70,15 @@
                     <p class="setup-hint">Affects strokes, ink, and time</p>
                     <div class="difficulty-options">
                         <button class="btn btn-option" data-diff="easy" onclick="Game.setDifficulty('easy')">
-                            <span class="diff-strokes">15 strokes</span>
+                            <span class="diff-strokes">10 strokes</span>
                             <span class="diff-name">Easy</span>
                         </button>
                         <button class="btn btn-option active" data-diff="medium" onclick="Game.setDifficulty('medium')">
-                            <span class="diff-strokes">10 strokes</span>
+                            <span class="diff-strokes">7 strokes</span>
                             <span class="diff-name">Medium</span>
                         </button>
                         <button class="btn btn-option" data-diff="hard" onclick="Game.setDifficulty('hard')">
-                            <span class="diff-strokes">6 strokes</span>
+                            <span class="diff-strokes">4 strokes</span>
                             <span class="diff-name">Hard</span>
                         </button>
                     </div>
@@ -167,7 +167,7 @@
                 <div class="draw-stats">
                     <div class="draw-stat">
                         <span class="draw-stat-label">Strokes</span>
-                        <span class="draw-stat-value" id="stroke-count">0/10</span>
+                        <span class="draw-stat-value" id="stroke-count">0/8</span>
                     </div>
                     <div class="draw-stat">
                         <span class="draw-stat-label">Ink</span>
@@ -188,37 +188,12 @@
                 <button class="btn btn-undo" onclick="Game.undoStroke()" id="undo-btn">
                     ↩ Undo
                 </button>
-                <button class="btn btn-clear" onclick="Game.clearCanvas()">
-                    🗑️ Clear
+                <button class="btn btn-wrong" onclick="Game.markWrong()">
+                    ✗ Nope
                 </button>
-                <button class="btn btn-done" onclick="Game.finishDrawing()">
-                    Done! ✓
+                <button class="btn btn-correct" onclick="Game.markCorrect()">
+                    ✓ Got It!
                 </button>
-            </div>
-        </div>
-
-        <!-- Guessing Screen -->
-        <div id="screen-guess" class="screen">
-            <div class="screen-content">
-                <h2 class="screen-title">What is it?</h2>
-                <p class="guess-hint">Everyone look and guess!</p>
-
-                <div class="canvas-display">
-                    <canvas id="display-canvas"></canvas>
-                </div>
-
-                <div class="guess-timer">
-                    <span id="guess-timer">30</span>s remaining
-                </div>
-
-                <div class="guess-actions">
-                    <button class="btn btn-wrong" onclick="Game.markWrong()">
-                        ✗ Time's Up
-                    </button>
-                    <button class="btn btn-correct" onclick="Game.markCorrect()">
-                        ✓ Got It!
-                    </button>
-                </div>
             </div>
         </div>
 

@@ -19,12 +19,11 @@ const Game = {
         currentStroke: null,
         strokeCount: 0,
         inkUsed: 0,
-        maxStrokes: 10,
-        maxInk: 2000,
+        maxStrokes: 7,
+        maxInk: 1200,
         isDrawing: false,
         // Timers
         drawTime: 45,
-        guessTime: 30,
         timeRemaining: 0,
         timerInterval: null
     },
@@ -59,7 +58,6 @@ const Game = {
                 pass: document.getElementById('screen-pass'),
                 word: document.getElementById('screen-word'),
                 draw: document.getElementById('screen-draw'),
-                guess: document.getElementById('screen-guess'),
                 answer: document.getElementById('screen-answer'),
                 victory: document.getElementById('screen-victory')
             },
@@ -80,8 +78,6 @@ const Game = {
             drawTimer: document.getElementById('draw-timer'),
             canvasMessage: document.getElementById('canvas-message'),
             undoBtn: document.getElementById('undo-btn'),
-            // Guess
-            guessTimer: document.getElementById('guess-timer'),
             // Answer
             answerIcon: document.getElementById('answer-icon'),
             answerTitle: document.getElementById('answer-title'),
@@ -96,8 +92,6 @@ const Game = {
         // Canvas elements
         this.canvas = document.getElementById('draw-canvas');
         this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
-        this.displayCanvas = document.getElementById('display-canvas');
-        this.displayCtx = this.displayCanvas ? this.displayCanvas.getContext('2d') : null;
     },
 
     /**
@@ -362,7 +356,7 @@ const Game = {
         // Start timer
         this.state.timeRemaining = this.state.drawTime;
         this.updateTimerDisplay();
-        this.startTimer('draw');
+        this.startTimer();
 
         this.showScreen('draw');
     },
@@ -372,10 +366,11 @@ const Game = {
      */
     setupCanvas() {
         const container = document.querySelector('.canvas-container');
-        const size = Math.min(container.clientWidth - 20, container.clientHeight - 20, 400);
+        const width = container.clientWidth - 10;
+        const height = container.clientHeight - 10;
 
-        this.canvas.width = size;
-        this.canvas.height = size;
+        this.canvas.width = width;
+        this.canvas.height = height;
 
         // Setup context
         this.ctx.lineCap = 'round';
@@ -385,7 +380,7 @@ const Game = {
 
         // Clear canvas
         this.ctx.fillStyle = 'white';
-        this.ctx.fillRect(0, 0, size, size);
+        this.ctx.fillRect(0, 0, width, height);
 
         // Setup events
         this.setupCanvasEvents();
@@ -587,63 +582,25 @@ const Game = {
     },
 
     /**
-     * Finish drawing
+     * Finish drawing - time ran out without a guess
      */
     finishDrawing() {
-        this.stopTimer();
-        this.showGuessing();
-    },
-
-    /**
-     * Show guessing screen
-     */
-    showGuessing() {
-        // Copy drawing to display canvas
-        const container = document.querySelector('.canvas-display');
-        const size = Math.min(container.clientWidth - 40, 400);
-
-        this.displayCanvas.width = size;
-        this.displayCanvas.height = size;
-
-        this.displayCtx.fillStyle = 'white';
-        this.displayCtx.fillRect(0, 0, size, size);
-
-        // Scale and draw
-        const scale = size / this.canvas.width;
-        this.displayCtx.scale(scale, scale);
-        this.displayCtx.drawImage(this.canvas, 0, 0);
-        this.displayCtx.setTransform(1, 0, 0, 1, 0, 0);
-
-        // Start guess timer
-        this.state.timeRemaining = this.state.guessTime;
-        this.elements.guessTimer.textContent = this.state.timeRemaining;
-        this.startTimer('guess');
-
-        this.showScreen('guess');
+        this.markWrong();
     },
 
     /**
      * Start timer
      */
-    startTimer(mode) {
+    startTimer() {
         this.stopTimer();
 
         this.state.timerInterval = setInterval(() => {
             this.state.timeRemaining--;
-
-            if (mode === 'draw') {
-                this.updateTimerDisplay();
-            } else {
-                this.elements.guessTimer.textContent = this.state.timeRemaining;
-            }
+            this.updateTimerDisplay();
 
             if (this.state.timeRemaining <= 0) {
                 this.stopTimer();
-                if (mode === 'draw') {
-                    this.showGuessing();
-                } else {
-                    this.markWrong();
-                }
+                this.markWrong();
             }
         }, 1000);
     },
