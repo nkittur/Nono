@@ -20,6 +20,7 @@ const Game = {
         blockPadding: 4,
         wallThickness: 12,
         initialLives: 3,
+        paddleEdgeControl: 0.85,
         colors: {
             players: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'],
             wall: '#4b5563',
@@ -40,6 +41,7 @@ const Game = {
         currentScreen: 'welcome',
         playerCount: 2,
         blockSize: 'medium',
+        replaceEliminatedWithWall: false,
         activeSides: ['bottom', 'top'],
         players: [],
         blocks: [],
@@ -90,6 +92,9 @@ const Game = {
             touchZones: document.getElementById('touch-zones'),
             launchOverlay: document.getElementById('launch-overlay'),
             launchPlayer: document.getElementById('launch-player'),
+            options: {
+                eliminationWallToggle: document.getElementById('option-elimination-wall')
+            },
             // Game over
             gameoverIcon: document.getElementById('gameover-icon'),
             gameoverTitle: document.getElementById('gameover-title'),
@@ -158,6 +163,7 @@ const Game = {
      */
     showSetup() {
         this.updatePositionUI();
+        this.syncSetupOptions();
         this.showScreen('setup');
     },
 
@@ -187,6 +193,23 @@ const Game = {
         this.elements.blockSizeBtns.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.size === size);
         });
+    },
+
+    /**
+     * Sync setup option controls with state
+     */
+    syncSetupOptions() {
+        if (this.elements.options.eliminationWallToggle) {
+            this.elements.options.eliminationWallToggle.checked = this.state.replaceEliminatedWithWall;
+        }
+    },
+
+    /**
+     * Set whether eliminated players become walls
+     */
+    setEliminationWallOption(enabled) {
+        this.state.replaceEliminatedWithWall = Boolean(enabled);
+        this.syncSetupOptions();
     },
 
     /**
@@ -731,21 +754,33 @@ const Game = {
         const sides = ['top', 'right', 'bottom', 'left'];
 
         sides.forEach(side => {
-            const hasAlivePlayer = this.hasAlivePlayerOnSide(side);
-            if (hasAlivePlayer) return;
+            const hasBarrier = this.hasBarrierOnSide(side);
 
-            if (side === 'top' && ball.y - ball.radius < wall) {
-                ball.y = wall + ball.radius;
-                ball.vy = Math.abs(ball.vy);
-            } else if (side === 'bottom' && ball.y + ball.radius > size - wall) {
-                ball.y = size - wall - ball.radius;
-                ball.vy = -Math.abs(ball.vy);
-            } else if (side === 'left' && ball.x - ball.radius < wall) {
-                ball.x = wall + ball.radius;
-                ball.vx = Math.abs(ball.vx);
-            } else if (side === 'right' && ball.x + ball.radius > size - wall) {
-                ball.x = size - wall - ball.radius;
-                ball.vx = -Math.abs(ball.vx);
+            if (hasBarrier) {
+                if (side === 'top' && ball.y - ball.radius < wall) {
+                    ball.y = wall + ball.radius;
+                    ball.vy = Math.abs(ball.vy);
+                } else if (side === 'bottom' && ball.y + ball.radius > size - wall) {
+                    ball.y = size - wall - ball.radius;
+                    ball.vy = -Math.abs(ball.vy);
+                } else if (side === 'left' && ball.x - ball.radius < wall) {
+                    ball.x = wall + ball.radius;
+                    ball.vx = Math.abs(ball.vx);
+                } else if (side === 'right' && ball.x + ball.radius > size - wall) {
+                    ball.x = size - wall - ball.radius;
+                    ball.vx = -Math.abs(ball.vx);
+                }
+                return;
+            }
+
+            if (side === 'top' && ball.y + ball.radius < 0) {
+                this.handleOutOfBounds(side);
+            } else if (side === 'bottom' && ball.y - ball.radius > size) {
+                this.handleOutOfBounds(side);
+            } else if (side === 'left' && ball.x + ball.radius < 0) {
+                this.handleOutOfBounds(side);
+            } else if (side === 'right' && ball.x - ball.radius > size) {
+                this.handleOutOfBounds(side);
             }
         });
     },
@@ -755,6 +790,23 @@ const Game = {
      */
     hasAlivePlayerOnSide(side) {
         return this.state.players.some(player => player.side === side && player.lives > 0);
+    },
+
+    /**
+     * Determine if a side should currently act as a solid wall
+     */
+    hasBarrierOnSide(side) {
+        const player = this.state.players.find(p => p.side === side);
+
+        if (!player) {
+            return true; // No player assigned -> always a wall
+        }
+
+        if (player.lives > 0) {
+            return false;
+        }
+
+        return this.state.replaceEliminatedWithWall;
     },
 
     /**
@@ -869,18 +921,29 @@ const Game = {
      */
     addPaddleSpin(player, paddle) {
         const ball = this.state.ball;
+        const influence = this.config.paddleEdgeControl;
+        const clamp = (value) => Math.max(-1, Math.min(1, value));
+        const speed = this.state.ball.speed;
 
         if (player.side === 'top' || player.side === 'bottom') {
-            const hitPos = (ball.x - paddle.x) / paddle.width - 0.5;
-            ball.vx += hitPos * 3;
-        } else {
-            const hitPos = (ball.y - paddle.y) / paddle.height - 0.5;
-            ball.vy += hitPos * 3;
-        }
+            const relativeHit = clamp(((ball.x - paddle.x) / paddle.width - 0.5) * 2);
+            const horizontalComponent = relativeHit * speed * influence;
+            const verticalComponent = Math.sqrt(Math.max(speed * speed - horizontalComponent * horizontalComponent, 0.01));
 
-        const currentSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-        ball.vx = (ball.vx / currentSpeed) * ball.speed;
-        ball.vy = (ball.vy / currentSpeed) * ball.speed;
+            ball.vx = horizontalComponent;
+            ball.vy = player.side === 'top'
+                ? Math.abs(verticalComponent)
+                : -Math.abs(verticalComponent);
+        } else {
+            const relativeHit = clamp(((ball.y - paddle.y) / paddle.height - 0.5) * 2);
+            const verticalComponent = relativeHit * speed * influence;
+            const horizontalComponent = Math.sqrt(Math.max(speed * speed - verticalComponent * verticalComponent, 0.01));
+
+            ball.vy = verticalComponent;
+            ball.vx = player.side === 'left'
+                ? Math.abs(horizontalComponent)
+                : -Math.abs(horizontalComponent);
+        }
     },
 
     /**
@@ -1101,7 +1164,7 @@ const Game = {
 
         const sides = ['top', 'right', 'bottom', 'left'];
         sides.forEach(side => {
-            if (this.hasAlivePlayerOnSide(side)) return;
+            if (!this.hasBarrierOnSide(side)) return;
 
             if (side === 'top') {
                 ctx.fillRect(0, 0, size, wall);
@@ -1182,6 +1245,14 @@ const Game = {
      */
     playAgain() {
         this.startGame();
+    },
+
+    /**
+     * Handle ball leaving the arena through an open side
+     */
+    handleOutOfBounds() {
+        if (!this.state.isLaunched) return;
+        this.resetBallToPaddle();
     }
 };
 
