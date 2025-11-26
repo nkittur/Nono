@@ -6,13 +6,13 @@
 const Game = {
     // Game configuration
     config: {
-        initialBallSpeed: 4,
-        maxBallSpeed: 12,
-        speedIncreasePerBlock: 0.05,
+        initialBallSpeed: 5,
+        maxBallSpeed: 14,
+        speedIncreasePerBlock: 0.15, // Faster speed increase
+        speedDecreaseOnDeath: 2, // Slow down on death instead of paddle growth
         initialPaddleWidth: 80,
         minPaddleWidth: 40,
         paddleShrinkPerBlock: 0.5,
-        paddleGrowthOnDeath: 20,
         paddleThickness: 12,
         ballRadius: 8,
         blockRows: 4,
@@ -28,16 +28,26 @@ const Game = {
         }
     },
 
+    // Block size presets
+    blockSizes: {
+        small: { rows: 6, cols: 8 },
+        medium: { rows: 4, cols: 6 },
+        large: { rows: 3, cols: 4 }
+    },
+
     // Game state
     state: {
         currentScreen: 'welcome',
         playerCount: 2,
+        blockSize: 'medium',
         activeSides: ['bottom', 'top'],
         players: [],
         blocks: [],
         ball: null,
         isPaused: false,
         isRunning: false,
+        isLaunched: false, // Ball launched state
+        launchPlayer: null, // Player who launches
         startTime: 0,
         blocksDestroyed: 0,
         totalBlocks: 0
@@ -72,11 +82,14 @@ const Game = {
                 gameover: document.getElementById('screen-gameover')
             },
             playerCountBtns: document.querySelectorAll('.player-count-options .btn-option'),
+            blockSizeBtns: document.querySelectorAll('.block-size-options .btn-option'),
             positionSlots: document.querySelectorAll('.position-slot'),
             hudLives: document.getElementById('hud-lives'),
             pauseOverlay: document.getElementById('pause-overlay'),
             pauseIcon: document.getElementById('pause-icon'),
             touchZones: document.getElementById('touch-zones'),
+            launchOverlay: document.getElementById('launch-overlay'),
+            launchPlayer: document.getElementById('launch-player'),
             // Game over
             gameoverIcon: document.getElementById('gameover-icon'),
             gameoverTitle: document.getElementById('gameover-title'),
@@ -104,6 +117,17 @@ const Game = {
                 this.resizeCanvas();
             }
         });
+
+        // Canvas tap to launch
+        if (this.canvas) {
+            this.canvas.addEventListener('click', () => this.launchBall());
+            this.canvas.addEventListener('touchstart', (e) => {
+                if (!this.state.isLaunched) {
+                    e.preventDefault();
+                    this.launchBall();
+                }
+            });
+        }
     },
 
     /**
@@ -157,6 +181,17 @@ const Game = {
     },
 
     /**
+     * Set block size
+     */
+    setBlockSize(size) {
+        this.state.blockSize = size;
+
+        this.elements.blockSizeBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.size === size);
+        });
+    },
+
+    /**
      * Auto-assign sides based on player count
      */
     autoAssignSides() {
@@ -179,16 +214,13 @@ const Game = {
         const index = this.state.activeSides.indexOf(side);
 
         if (index > -1) {
-            // Can't remove if it would leave us with fewer than playerCount
             if (this.state.activeSides.length > 1) {
                 this.state.activeSides.splice(index, 1);
             }
         } else {
-            // Can't add more than playerCount
             if (this.state.activeSides.length < this.state.playerCount) {
                 this.state.activeSides.push(side);
             } else {
-                // Replace oldest
                 this.state.activeSides.shift();
                 this.state.activeSides.push(side);
             }
@@ -201,7 +233,6 @@ const Game = {
      * Update position selector UI
      */
     updatePositionUI() {
-        const sides = ['top', 'right', 'bottom', 'left'];
         const playerColors = ['player-1', 'player-2', 'player-3', 'player-4'];
 
         this.elements.positionSlots.forEach(slot => {
@@ -209,7 +240,6 @@ const Game = {
             const isActive = this.state.activeSides.includes(side);
             const playerIndex = this.state.activeSides.indexOf(side);
 
-            // Remove all player classes
             slot.classList.remove('active', 'wall', ...playerColors);
 
             if (isActive) {
@@ -221,7 +251,6 @@ const Game = {
                 slot.querySelector('.position-label').textContent = 'Wall';
             }
 
-            // Reset label for active slots
             if (isActive) {
                 slot.querySelector('.position-label').textContent = side.charAt(0).toUpperCase() + side.slice(1);
             }
@@ -232,7 +261,6 @@ const Game = {
      * Start the game
      */
     startGame() {
-        // Ensure we have enough sides selected
         while (this.state.activeSides.length < this.state.playerCount) {
             const available = ['top', 'right', 'bottom', 'left'].filter(
                 s => !this.state.activeSides.includes(s)
@@ -244,7 +272,6 @@ const Game = {
 
         this.showScreen('game');
 
-        // Small delay to ensure screen is visible
         setTimeout(() => {
             this.initGame();
         }, 100);
@@ -257,14 +284,20 @@ const Game = {
         this.resizeCanvas();
         this.createPlayers();
         this.createBlocks();
-        this.createBall();
+        this.setupBallAtPaddle();
         this.setupTouchZones();
         this.updateHUD();
 
         this.state.isPaused = false;
         this.state.isRunning = true;
+        this.state.isLaunched = false;
         this.state.startTime = Date.now();
         this.state.blocksDestroyed = 0;
+
+        // Show launch overlay
+        this.elements.launchOverlay.classList.add('visible');
+        this.elements.launchPlayer.textContent = `P${this.state.launchPlayer.index + 1}`;
+        this.elements.launchPlayer.style.color = this.state.launchPlayer.color;
 
         this.elements.pauseOverlay.classList.remove('visible');
         this.elements.pauseIcon.textContent = '⏸️';
@@ -298,7 +331,7 @@ const Game = {
                 color: cfg.colors.players[index],
                 lives: cfg.initialLives,
                 paddleWidth: cfg.initialPaddleWidth,
-                position: size / 2, // Center position along the paddle's axis
+                position: size / 2,
                 velocity: 0,
                 isMovingLeft: false,
                 isMovingRight: false
@@ -316,15 +349,20 @@ const Game = {
         const size = this.canvas.width;
         const cfg = this.config;
 
+        // Get block config based on selected size
+        const blockConfig = this.blockSizes[this.state.blockSize];
+        const rows = blockConfig.rows;
+        const cols = blockConfig.cols;
+
         const blockAreaSize = size * 0.5;
         const startX = (size - blockAreaSize) / 2;
         const startY = (size - blockAreaSize) / 2;
 
-        const blockWidth = (blockAreaSize - (cfg.blockCols + 1) * cfg.blockPadding) / cfg.blockCols;
-        const blockHeight = (blockAreaSize - (cfg.blockRows + 1) * cfg.blockPadding) / cfg.blockRows;
+        const blockWidth = (blockAreaSize - (cols + 1) * cfg.blockPadding) / cols;
+        const blockHeight = (blockAreaSize - (rows + 1) * cfg.blockPadding) / rows;
 
-        for (let row = 0; row < cfg.blockRows; row++) {
-            for (let col = 0; col < cfg.blockCols; col++) {
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
                 this.state.blocks.push({
                     x: startX + cfg.blockPadding + col * (blockWidth + cfg.blockPadding),
                     y: startY + cfg.blockPadding + row * (blockHeight + cfg.blockPadding),
@@ -340,20 +378,71 @@ const Game = {
     },
 
     /**
-     * Create the ball
+     * Setup ball at a random player's paddle
      */
-    createBall() {
+    setupBallAtPaddle() {
         const size = this.canvas.width;
-        const angle = Math.random() * Math.PI * 2;
+        const cfg = this.config;
+
+        // Pick random player
+        const alivePlayers = this.state.players.filter(p => p.lives > 0);
+        const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+        this.state.launchPlayer = randomPlayer;
+
+        // Position ball at player's paddle
+        const paddle = this.getPaddleRect(randomPlayer);
+        let ballX, ballY;
+
+        if (randomPlayer.side === 'bottom') {
+            ballX = randomPlayer.position;
+            ballY = paddle.y - cfg.ballRadius - 2;
+        } else if (randomPlayer.side === 'top') {
+            ballX = randomPlayer.position;
+            ballY = paddle.y + paddle.height + cfg.ballRadius + 2;
+        } else if (randomPlayer.side === 'left') {
+            ballX = paddle.x + paddle.width + cfg.ballRadius + 2;
+            ballY = randomPlayer.position;
+        } else {
+            ballX = paddle.x - cfg.ballRadius - 2;
+            ballY = randomPlayer.position;
+        }
 
         this.state.ball = {
-            x: size / 2,
-            y: size / 2,
-            vx: Math.cos(angle) * this.config.initialBallSpeed,
-            vy: Math.sin(angle) * this.config.initialBallSpeed,
-            radius: this.config.ballRadius,
-            speed: this.config.initialBallSpeed
+            x: ballX,
+            y: ballY,
+            vx: 0,
+            vy: 0,
+            radius: cfg.ballRadius,
+            speed: cfg.initialBallSpeed
         };
+    },
+
+    /**
+     * Launch the ball
+     */
+    launchBall() {
+        if (this.state.isLaunched || !this.state.isRunning) return;
+
+        const player = this.state.launchPlayer;
+        const ball = this.state.ball;
+
+        // Set velocity based on which side the player is on
+        let angle;
+        if (player.side === 'bottom') {
+            angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+        } else if (player.side === 'top') {
+            angle = Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+        } else if (player.side === 'left') {
+            angle = (Math.random() - 0.5) * 0.8;
+        } else {
+            angle = Math.PI + (Math.random() - 0.5) * 0.8;
+        }
+
+        ball.vx = Math.cos(angle) * ball.speed;
+        ball.vy = Math.sin(angle) * ball.speed;
+
+        this.state.isLaunched = true;
+        this.elements.launchOverlay.classList.remove('visible');
     },
 
     /**
@@ -367,9 +456,9 @@ const Game = {
             zone.className = `touch-zone ${player.side}`;
             zone.dataset.playerIndex = index;
 
-            zone.addEventListener('touchstart', (e) => this.handleTouchStart(e, index));
-            zone.addEventListener('touchmove', (e) => this.handleTouchMove(e, index));
-            zone.addEventListener('touchend', (e) => this.handleTouchEnd(e, index));
+            zone.addEventListener('touchstart', (e) => this.handleTouchStart(e, index), { passive: false });
+            zone.addEventListener('touchmove', (e) => this.handleTouchMove(e, index), { passive: false });
+            zone.addEventListener('touchend', (e) => this.handleTouchEnd(e, index), { passive: false });
 
             this.elements.touchZones.appendChild(zone);
         });
@@ -380,13 +469,17 @@ const Game = {
      */
     handleTouchStart(e, playerIndex) {
         e.preventDefault();
+
+        // Launch ball if not launched and this is the launch player
+        if (!this.state.isLaunched && this.state.launchPlayer.index === playerIndex) {
+            this.launchBall();
+        }
+
         const player = this.state.players[playerIndex];
 
-        // Get the new touch(es) from changedTouches
         for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = e.changedTouches[i];
-            // Only track if this player doesn't already have a touch
-            if (!player.touchId) {
+            if (player.touchId === undefined || player.touchId === null) {
                 player.touchId = touch.identifier;
                 player.lastTouch = {
                     x: touch.clientX,
@@ -405,7 +498,6 @@ const Game = {
         const player = this.state.players[playerIndex];
         if (player.touchId === undefined || player.touchId === null) return;
 
-        // Find the specific touch by identifier
         let touch = null;
         for (let i = 0; i < e.changedTouches.length; i++) {
             if (e.changedTouches[i].identifier === player.touchId) {
@@ -419,19 +511,26 @@ const Game = {
         const deltaX = touch.clientX - player.lastTouch.x;
         const deltaY = touch.clientY - player.lastTouch.y;
 
-        // Move based on side orientation
         if (player.side === 'top' || player.side === 'bottom') {
             player.position += deltaX * 1.5;
         } else {
             player.position += deltaY * 1.5;
         }
 
-        // Clamp position
         const halfPaddle = player.paddleWidth / 2;
         player.position = Math.max(halfPaddle + this.config.wallThickness,
             Math.min(this.canvas.width - halfPaddle - this.config.wallThickness, player.position));
 
         player.lastTouch = { x: touch.clientX, y: touch.clientY };
+
+        // Move ball with paddle if not launched
+        if (!this.state.isLaunched && this.state.launchPlayer.index === playerIndex) {
+            if (player.side === 'top' || player.side === 'bottom') {
+                this.state.ball.x = player.position;
+            } else {
+                this.state.ball.y = player.position;
+            }
+        }
     },
 
     /**
@@ -440,7 +539,6 @@ const Game = {
     handleTouchEnd(e, playerIndex) {
         const player = this.state.players[playerIndex];
 
-        // Check if our tracked touch ended
         for (let i = 0; i < e.changedTouches.length; i++) {
             if (e.changedTouches[i].identifier === player.touchId) {
                 player.touchId = null;
@@ -456,11 +554,6 @@ const Game = {
     handleKeyDown(e) {
         if (!this.state.isRunning) return;
 
-        // Player 1 (bottom): A/D or Left/Right
-        // Player 2 (top): J/L
-        // Player 3 (left): W/S
-        // Player 4 (right): I/K
-
         const keyMap = {
             'ArrowLeft': { player: 0, dir: 'left' },
             'ArrowRight': { player: 0, dir: 'right' },
@@ -472,7 +565,8 @@ const Game = {
             's': { player: 2, dir: 'right' },
             'i': { player: 3, dir: 'left' },
             'k': { player: 3, dir: 'right' },
-            ' ': { action: 'pause' },
+            ' ': { action: 'launch' },
+            'Enter': { action: 'launch' },
             'Escape': { action: 'pause' }
         };
 
@@ -481,6 +575,11 @@ const Game = {
 
         if (action.action === 'pause') {
             this.togglePause();
+            return;
+        }
+
+        if (action.action === 'launch') {
+            this.launchBall();
             return;
         }
 
@@ -567,8 +666,10 @@ const Game = {
      */
     update() {
         this.updatePaddles();
-        this.updateBall();
-        this.checkCollisions();
+        if (this.state.isLaunched) {
+            this.updateBall();
+            this.checkCollisions();
+        }
         this.checkGameEnd();
     },
 
@@ -590,6 +691,15 @@ const Game = {
                 const halfPaddle = player.paddleWidth / 2;
                 player.position = Math.max(halfPaddle + this.config.wallThickness,
                     Math.min(this.canvas.width - halfPaddle - this.config.wallThickness, player.position));
+
+                // Move ball with paddle if not launched
+                if (!this.state.isLaunched && this.state.launchPlayer.index === player.index) {
+                    if (player.side === 'top' || player.side === 'bottom') {
+                        this.state.ball.x = player.position;
+                    } else {
+                        this.state.ball.y = player.position;
+                    }
+                }
             }
         });
     },
@@ -624,9 +734,8 @@ const Game = {
 
         sides.forEach(side => {
             const hasPlayer = this.state.activeSides.includes(side);
-            if (hasPlayer) return; // Will be handled by paddle collision
+            if (hasPlayer) return;
 
-            // Check wall collision
             if (side === 'top' && ball.y - ball.radius < wall) {
                 ball.y = wall + ball.radius;
                 ball.vy = Math.abs(ball.vy);
@@ -656,7 +765,6 @@ const Game = {
 
             const paddle = this.getPaddleRect(player);
 
-            // Check if ball is in paddle zone
             let hitPaddle = false;
             let missedPaddle = false;
 
@@ -703,7 +811,6 @@ const Game = {
             }
 
             if (hitPaddle) {
-                // Add some angle based on where it hit the paddle
                 this.addPaddleSpin(player, paddle);
             }
 
@@ -766,7 +873,6 @@ const Game = {
             ball.vy += hitPos * 3;
         }
 
-        // Normalize speed
         const currentSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
         ball.vx = (ball.vx / currentSpeed) * ball.speed;
         ball.vy = (ball.vy / currentSpeed) * ball.speed;
@@ -778,26 +884,56 @@ const Game = {
     playerLoseLife(player) {
         player.lives--;
 
-        // Grow paddle as consolation
-        player.paddleWidth = Math.min(150, player.paddleWidth + this.config.paddleGrowthOnDeath);
+        // Slow down ball instead of growing paddle
+        this.state.ball.speed = Math.max(
+            this.config.initialBallSpeed,
+            this.state.ball.speed - this.config.speedDecreaseOnDeath
+        );
 
         this.updateHUD();
 
-        // Reset ball to center
-        this.resetBall();
+        // Reset ball to a random alive player's paddle
+        this.resetBallToPaddle();
     },
 
     /**
-     * Reset ball to center
+     * Reset ball to a random alive player's paddle
      */
-    resetBall() {
-        const size = this.canvas.width;
-        const angle = Math.random() * Math.PI * 2;
+    resetBallToPaddle() {
+        const alivePlayers = this.state.players.filter(p => p.lives > 0);
+        if (alivePlayers.length === 0) return;
 
-        this.state.ball.x = size / 2;
-        this.state.ball.y = size / 2;
-        this.state.ball.vx = Math.cos(angle) * this.state.ball.speed;
-        this.state.ball.vy = Math.sin(angle) * this.state.ball.speed;
+        const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+        this.state.launchPlayer = randomPlayer;
+
+        const cfg = this.config;
+        const paddle = this.getPaddleRect(randomPlayer);
+        let ballX, ballY;
+
+        if (randomPlayer.side === 'bottom') {
+            ballX = randomPlayer.position;
+            ballY = paddle.y - cfg.ballRadius - 2;
+        } else if (randomPlayer.side === 'top') {
+            ballX = randomPlayer.position;
+            ballY = paddle.y + paddle.height + cfg.ballRadius + 2;
+        } else if (randomPlayer.side === 'left') {
+            ballX = paddle.x + paddle.width + cfg.ballRadius + 2;
+            ballY = randomPlayer.position;
+        } else {
+            ballX = paddle.x - cfg.ballRadius - 2;
+            ballY = randomPlayer.position;
+        }
+
+        this.state.ball.x = ballX;
+        this.state.ball.y = ballY;
+        this.state.ball.vx = 0;
+        this.state.ball.vy = 0;
+        this.state.isLaunched = false;
+
+        // Show launch overlay
+        this.elements.launchOverlay.classList.add('visible');
+        this.elements.launchPlayer.textContent = `P${randomPlayer.index + 1}`;
+        this.elements.launchPlayer.style.color = randomPlayer.color;
     },
 
     /**
@@ -809,7 +945,6 @@ const Game = {
         this.state.blocks.forEach(block => {
             if (!block.alive) return;
 
-            // Simple AABB collision
             if (ball.x + ball.radius > block.x &&
                 ball.x - ball.radius < block.x + block.width &&
                 ball.y + ball.radius > block.y &&
@@ -818,7 +953,6 @@ const Game = {
                 block.alive = false;
                 this.state.blocksDestroyed++;
 
-                // Determine bounce direction
                 const overlapLeft = (ball.x + ball.radius) - block.x;
                 const overlapRight = (block.x + block.width) - (ball.x - ball.radius);
                 const overlapTop = (ball.y + ball.radius) - block.y;
@@ -833,13 +967,12 @@ const Game = {
                     ball.vy = -ball.vy;
                 }
 
-                // Speed up ball
+                // Speed up ball faster
                 this.state.ball.speed = Math.min(
                     this.config.maxBallSpeed,
                     this.state.ball.speed + this.config.speedIncreasePerBlock
                 );
 
-                // Normalize velocity to new speed
                 const currentSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
                 ball.vx = (ball.vx / currentSpeed) * this.state.ball.speed;
                 ball.vy = (ball.vy / currentSpeed) * this.state.ball.speed;
@@ -861,14 +994,12 @@ const Game = {
      * Check if game should end
      */
     checkGameEnd() {
-        // Victory: all blocks destroyed
         const aliveBlocks = this.state.blocks.filter(b => b.alive).length;
         if (aliveBlocks === 0) {
             this.endGame(true);
             return;
         }
 
-        // Defeat: all players dead
         const alivePlayers = this.state.players.filter(p => p.lives > 0).length;
         if (alivePlayers === 0) {
             this.endGame(false);
@@ -889,7 +1020,6 @@ const Game = {
         const minutes = Math.floor(elapsed / 60);
         const seconds = elapsed % 60;
 
-        // Update UI
         this.elements.gameoverIcon.textContent = victory ? '🎉' : '💥';
         this.elements.gameoverTitle.textContent = victory ? 'Victory!' : 'Game Over';
         this.elements.gameoverSubtitle.textContent = victory
@@ -899,7 +1029,6 @@ const Game = {
         this.elements.statBlocks.textContent = this.state.blocksDestroyed;
         this.elements.statTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-        // Build survivor list
         this.elements.survivorList.innerHTML = '';
         this.state.players.forEach((player, i) => {
             const item = document.createElement('div');
@@ -946,20 +1075,12 @@ const Game = {
         const ctx = this.ctx;
         const size = this.canvas.width;
 
-        // Clear
         ctx.fillStyle = '#1a1a2e';
         ctx.fillRect(0, 0, size, size);
 
-        // Draw walls
         this.renderWalls();
-
-        // Draw blocks
         this.renderBlocks();
-
-        // Draw paddles
         this.renderPaddles();
-
-        // Draw ball
         this.renderBall();
     },
 
@@ -1001,7 +1122,6 @@ const Game = {
             ctx.fillStyle = block.color;
             ctx.fillRect(block.x, block.y, block.width, block.height);
 
-            // Add slight 3D effect
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
             ctx.fillRect(block.x, block.y, block.width, 3);
             ctx.fillRect(block.x, block.y, 3, block.height);
@@ -1022,7 +1142,6 @@ const Game = {
             ctx.fillStyle = player.color;
             ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
 
-            // Rounded ends
             ctx.beginPath();
             if (player.side === 'top' || player.side === 'bottom') {
                 ctx.arc(paddle.x, paddle.y + paddle.height / 2, paddle.height / 2, 0, Math.PI * 2);
@@ -1047,7 +1166,6 @@ const Game = {
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Glow effect
         ctx.shadowColor = this.config.colors.ball;
         ctx.shadowBlur = 10;
         ctx.fill();
