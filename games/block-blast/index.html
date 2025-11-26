@@ -38,6 +38,7 @@
                         <li><span class="rule-icon">🧱</span> Smash all the blocks in the middle</li>
                         <li><span class="rule-icon">💨</span> Ball speeds up as blocks break</li>
                         <li><span class="rule-icon">❤️</span> 3 lives each - don't let it past you!</li>
+                        <li><span class="rule-icon">🚧</span> Decide if fallen players become walls in setup</li>
                     </ul>
                 </div>
 
@@ -118,14 +119,25 @@
                     </div>
                 </div>
 
+                <div class="setup-section">
+                    <h3>Elimination Walls</h3>
+                    <p class="setup-hint">Prefer clean walls or chaotic gaps when someone busts?</p>
+                    <label class="toggle-option">
+                        <input type="checkbox" id="option-elimination-wall" onchange="Game.setEliminationWallOption(this.checked)">
+                        <span class="toggle-slider" aria-hidden="true"></span>
+                        <div class="toggle-copy">
+                            <span class="toggle-title">Replace eliminated players with walls</span>
+                            <span class="toggle-caption">Default off for wide-open chaos.</span>
+                        </div>
+                    </label>
+                </div>
+
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
                     <button class="btn btn-primary" onclick="Game.startGame()">Play!</button>
                 </div>
             </div>
         </div>
-
-        <!-- Game Screen -->
         <div id="screen-game" class="screen">
             <div class="game-hud">
                 <div class="hud-lives" id="hud-lives">
