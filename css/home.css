@@ -1,0 +1,303 @@
+/* ========================================
+   Home Screen - Party Games Hub
+   ======================================== */
+
+#app {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========================================
+   Header
+   ======================================== */
+
+.hub-header {
+    padding: var(--space-lg);
+    padding-top: calc(var(--space-lg) + var(--safe-area-top));
+    background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+    box-shadow: var(--shadow-lg);
+}
+
+.hub-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hub-icon {
+    font-size: 2.5rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.hub-title-group {
+    flex: 1;
+}
+
+.hub-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.hub-subtitle {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+/* ========================================
+   Main Content
+   ======================================== */
+
+.hub-content {
+    flex: 1;
+    padding: var(--space-lg);
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.games-section {
+    margin-bottom: var(--space-xl);
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ========================================
+   Games Grid
+   ======================================== */
+
+.games-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* ========================================
+   Game Tile
+   ======================================== */
+
+.game-tile {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-fast);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.game-tile:hover {
+    background: var(--bg-card-light);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.game-tile:active {
+    transform: translateY(0);
+}
+
+/* Coming Soon Tiles */
+.game-tile.coming-soon {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.game-tile.coming-soon:hover {
+    background: var(--bg-card);
+    border-color: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Tile Icon */
+.game-tile-icon {
+    font-size: 2.5rem;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card-light);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.game-tile:hover:not(.coming-soon) .game-tile-icon {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* Tile Content */
+.game-tile-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.game-tile-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.game-tile-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-sm) 0;
+    line-height: 1.4;
+}
+
+/* Meta info (players, time) */
+.game-tile-meta {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.meta-item svg {
+    opacity: 0.7;
+}
+
+/* Coming Soon Badge */
+.game-tile-badge {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-card-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Arrow Icon */
+.game-tile-arrow {
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.game-tile:hover:not(.coming-soon) .game-tile-arrow {
+    color: var(--color-primary);
+    transform: translateX(4px);
+}
+
+.game-tile.coming-soon .game-tile-arrow {
+    display: none;
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+
+.hub-footer {
+    padding: var(--space-lg);
+    padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* ========================================
+   Responsive - Larger Screens
+   ======================================== */
+
+@media (min-width: 600px) {
+    .hub-header {
+        padding: var(--space-xl);
+        padding-top: calc(var(--space-xl) + var(--safe-area-top));
+    }
+
+    .hub-icon {
+        font-size: 3rem;
+    }
+
+    .hub-title {
+        font-size: 2rem;
+    }
+
+    .hub-subtitle {
+        font-size: 1rem;
+    }
+
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-lg);
+    }
+
+    .game-tile {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-xl);
+    }
+
+    .game-tile-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 3rem;
+    }
+
+    .game-tile-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .game-tile-meta {
+        justify-content: center;
+    }
+
+    .game-tile-arrow {
+        display: none;
+    }
+}
+
+@media (min-width: 900px) {
+    .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+.game-tile {
+    animation: fadeIn var(--transition-normal) ease;
+    animation-fill-mode: both;
+}
+
+.game-tile:nth-child(1) { animation-delay: 0ms; }
+.game-tile:nth-child(2) { animation-delay: 50ms; }
+.game-tile:nth-child(3) { animation-delay: 100ms; }
+.game-tile:nth-child(4) { animation-delay: 150ms; }
+.game-tile:nth-child(5) { animation-delay: 200ms; }
+.game-tile:nth-child(6) { animation-delay: 250ms; }

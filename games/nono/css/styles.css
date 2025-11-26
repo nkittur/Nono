@@ -1,86 +1,7 @@
 /* ========================================
    Nono - Word Guessing Game Styles
+   Game-specific styles (shared.css provides base)
    ======================================== */
-
-/* CSS Custom Properties */
-:root {
-    /* Colors */
-    --color-primary: #6366f1;
-    --color-primary-dark: #4f46e5;
-    --color-primary-light: #818cf8;
-    --color-accent: #f59e0b;
-    --color-accent-dark: #d97706;
-    --color-success: #10b981;
-    --color-success-dark: #059669;
-    --color-danger: #ef4444;
-    --color-danger-dark: #dc2626;
-    --color-warning: #f59e0b;
-
-    /* Backgrounds */
-    --bg-dark: #0f172a;
-    --bg-card: #1e293b;
-    --bg-card-light: #334155;
-    --bg-surface: #1e293b;
-
-    /* Text */
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-
-    /* Spacing */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
-
-    /* Border Radius */
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
-    --radius-full: 9999px;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
-    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
-
-    /* Transitions */
-    --transition-fast: 150ms ease;
-    --transition-normal: 250ms ease;
-    --transition-slow: 350ms ease;
-
-    /* Safe areas for mobile */
-    --safe-area-top: env(safe-area-inset-top);
-    --safe-area-bottom: env(safe-area-inset-bottom);
-}
-
-/* Reset & Base */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-size: 16px;
-    -webkit-text-size-adjust: 100%;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-primary);
-    line-height: 1.5;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
 
 #app {
     min-height: 100vh;
@@ -94,7 +15,7 @@ body {
     display: none;
     flex: 1;
     padding: var(--space-lg);
-    padding-top: calc(var(--space-lg) + var(--safe-area-top));
+    padding-top: calc(var(--space-lg) + var(--safe-area-top) + 50px); /* Extra space for home button */
     padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
     animation: fadeIn var(--transition-normal);
 }
@@ -102,11 +23,6 @@ body {
 .screen.active {
     display: flex;
     flex-direction: column;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .screen-content {
@@ -145,11 +61,6 @@ body {
     display: block;
     margin-bottom: var(--space-sm);
     animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
 }
 
 .logo-text {
@@ -202,66 +113,8 @@ body {
 }
 
 /* ========================================
-   Buttons
+   Game-specific Buttons
    ======================================== */
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg);
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    min-height: 48px;
-}
-
-.btn:active {
-    transform: scale(0.97);
-}
-
-.btn-primary {
-    background: var(--color-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--color-primary-dark);
-}
-
-.btn-secondary {
-    background: var(--bg-card-light);
-    color: var(--text-primary);
-}
-
-.btn-secondary:hover {
-    background: var(--bg-card);
-}
-
-.btn-large {
-    width: 100%;
-    padding: var(--space-lg);
-    font-size: 1.125rem;
-    border-radius: var(--radius-lg);
-    min-height: 56px;
-}
-
-.btn-icon {
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    font-size: 1.5rem;
-    border-radius: var(--radius-full);
-    background: var(--bg-card-light);
-    color: var(--text-primary);
-}
 
 .btn-option {
     flex: 1;
@@ -310,11 +163,6 @@ body {
 /* Pulse animation for ready button */
 .btn.pulse {
     animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
-    50% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
 }
 
 /* ========================================
@@ -455,6 +303,7 @@ body {
 
 #screen-game {
     padding: var(--space-md);
+    padding-top: calc(var(--space-md) + var(--safe-area-top) + 50px);
     display: none;
     flex-direction: column;
 }
@@ -747,6 +596,7 @@ body {
 @media (min-width: 768px) {
     .screen {
         padding: var(--space-xl);
+        padding-top: calc(var(--space-xl) + var(--safe-area-top) + 50px);
     }
 
     .deck-grid {
@@ -796,24 +646,4 @@ body {
         padding: var(--space-xs) var(--space-sm);
         font-size: 0.875rem;
     }
-}
-
-/* ========================================
-   Utilities
-   ======================================== */
-
-.hidden {
-    display: none !important;
-}
-
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
 }

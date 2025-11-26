@@ -3,218 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Nono - A fun pass-and-play word guessing game. Describe words without saying the taboo 'no-no' words!">
+    <meta name="description" content="Party Games Hub - Fun pass-and-play party games to build relationships and make memories together.">
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Nono - Word Guessing Game</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚫</text></svg>">
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Party Games - Fun Games for Friends & Family</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
     <div id="app">
-        <!-- Welcome Screen -->
-        <div id="screen-welcome" class="screen active">
-            <div class="screen-content">
-                <div class="logo">
-                    <span class="logo-icon">🚫</span>
-                    <h1 class="logo-text">Nono</h1>
-                </div>
-                <p class="tagline">The Word Guessing Party Game</p>
-
-                <div class="rules-card">
-                    <h2>How to Play</h2>
-                    <ul class="rules-list">
-                        <li><span class="rule-icon">🎯</span> Describe the word on the card</li>
-                        <li><span class="rule-icon">🚫</span> Don't say the "no-no" words!</li>
-                        <li><span class="rule-icon">⏱️</span> Beat the clock each turn</li>
-                        <li><span class="rule-icon">📱</span> Pass the phone after each turn</li>
-                        <li><span class="rule-icon">🏆</span> Work together to reach the goal!</li>
-                    </ul>
-                </div>
-
-                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
-                    Start Game
-                </button>
-            </div>
-        </div>
-
-        <!-- Setup Screen -->
-        <div id="screen-setup" class="screen">
-            <div class="screen-content">
-                <h2 class="screen-title">Game Setup</h2>
-
-                <div class="setup-section">
-                    <h3>Choose Your Decks</h3>
-                    <p class="setup-hint">Select one or more topics</p>
-                    <div id="deck-selection" class="deck-grid">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <div class="setup-section">
-                    <h3>Target Score</h3>
-                    <div class="score-selector">
-                        <button class="btn btn-icon" onclick="Game.adjustTarget(-5)">−</button>
-                        <span id="target-score" class="score-display">25</span>
-                        <button class="btn btn-icon" onclick="Game.adjustTarget(5)">+</button>
-                    </div>
-                </div>
-
-                <div class="setup-section">
-                    <h3>Turn Timer</h3>
-                    <div class="timer-options">
-                        <button class="btn btn-option" data-time="30" onclick="Game.setTimer(30)">30s</button>
-                        <button class="btn btn-option" data-time="45" onclick="Game.setTimer(45)">45s</button>
-                        <button class="btn btn-option active" data-time="60" onclick="Game.setTimer(60)">60s</button>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
-                    <button class="btn btn-primary" onclick="Game.startGame()">Begin Game</button>
+        <header class="hub-header">
+            <div class="hub-brand">
+                <span class="hub-icon">🎮</span>
+                <div class="hub-title-group">
+                    <h1 class="hub-title">Party Games</h1>
+                    <p class="hub-subtitle">Pass & Play Together</p>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Ready Screen (Pass Device) -->
-        <div id="screen-ready" class="screen">
-            <div class="screen-content center-content">
-                <div class="pass-device-icon">📱</div>
-                <h2>Pass to Next Player</h2>
-                <p class="ready-hint">Hand the device to the next describer.<br>Don't let them see until they're ready!</p>
+        <main class="hub-content">
+            <section class="games-section">
+                <h2 class="section-title">Choose a Game</h2>
 
-                <div class="game-stats">
-                    <div class="stat">
-                        <span class="stat-value" id="ready-score">0</span>
-                        <span class="stat-label">Points</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value" id="ready-target">25</span>
-                        <span class="stat-label">Goal</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value" id="ready-turn">1</span>
-                        <span class="stat-label">Turn</span>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary btn-large pulse" onclick="Game.startTurn()">
-                    I'm Ready!
-                </button>
-            </div>
-        </div>
-
-        <!-- Active Game Screen -->
-        <div id="screen-game" class="screen">
-            <div class="game-header">
-                <div class="timer-container">
-                    <svg class="timer-ring" viewBox="0 0 100 100">
-                        <circle class="timer-ring-bg" cx="50" cy="50" r="45"/>
-                        <circle class="timer-ring-progress" cx="50" cy="50" r="45" id="timer-progress"/>
-                    </svg>
-                    <span class="timer-text" id="timer-text">30</span>
-                </div>
-                <div class="turn-score">
-                    <span id="turn-points">0</span> this turn
-                </div>
-            </div>
-
-            <div class="card-container">
-                <div class="game-card">
-                    <div class="card-word" id="card-word">PIZZA</div>
-                    <div class="card-divider">
-                        <span class="divider-label">🚫 Don't Say</span>
-                    </div>
-                    <ul class="taboo-list" id="taboo-list">
-                        <li>Cheese</li>
-                        <li>Italian</li>
-                        <li>Slice</li>
-                        <li>Pepperoni</li>
-                        <li>Dough</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="game-actions">
-                <button class="btn btn-skip" onclick="Game.skipCard()">
-                    Skip
-                </button>
-                <button class="btn btn-correct" onclick="Game.correctGuess()">
-                    Got It! ✓
-                </button>
-            </div>
-        </div>
-
-        <!-- Turn Summary Screen -->
-        <div id="screen-summary" class="screen">
-            <div class="screen-content center-content">
-                <div class="summary-icon" id="summary-icon">👏</div>
-                <h2 id="summary-title">Nice Turn!</h2>
-
-                <div class="summary-stats">
-                    <div class="summary-stat highlight">
-                        <span class="stat-value" id="summary-turn-points">+3</span>
-                        <span class="stat-label">Points This Turn</span>
-                    </div>
-                    <div class="summary-stat">
-                        <span class="stat-value" id="summary-total">12</span>
-                        <span class="stat-label">Total Score</span>
-                    </div>
-                    <div class="summary-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="summary-progress"></div>
+                <div class="games-grid">
+                    <!-- Nono Game Tile -->
+                    <a href="games/nono/" class="game-tile">
+                        <div class="game-tile-icon">🚫</div>
+                        <div class="game-tile-content">
+                            <h3 class="game-tile-title">Nono</h3>
+                            <p class="game-tile-description">Describe words without saying the taboo "no-no" words!</p>
+                            <div class="game-tile-meta">
+                                <span class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                    3+ players
+                                </span>
+                                <span class="meta-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    15-30 min
+                                </span>
+                            </div>
                         </div>
-                        <span class="progress-label" id="summary-progress-label">12 / 25</span>
+                        <div class="game-tile-arrow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
+                    </a>
+
+                    <!-- Coming Soon Tiles -->
+                    <div class="game-tile coming-soon">
+                        <div class="game-tile-icon">🎨</div>
+                        <div class="game-tile-content">
+                            <h3 class="game-tile-title">Quick Draw</h3>
+                            <p class="game-tile-description">Draw and guess before time runs out!</p>
+                            <div class="game-tile-badge">Coming Soon</div>
+                        </div>
+                    </div>
+
+                    <div class="game-tile coming-soon">
+                        <div class="game-tile-icon">🎭</div>
+                        <div class="game-tile-content">
+                            <h3 class="game-tile-title">Act It Out</h3>
+                            <p class="game-tile-description">Charades with a modern twist!</p>
+                            <div class="game-tile-badge">Coming Soon</div>
+                        </div>
+                    </div>
+
+                    <div class="game-tile coming-soon">
+                        <div class="game-tile-icon">🤔</div>
+                        <div class="game-tile-content">
+                            <h3 class="game-tile-title">Would You Rather</h3>
+                            <p class="game-tile-description">Tough choices that spark conversations!</p>
+                            <div class="game-tile-badge">Coming Soon</div>
+                        </div>
+                    </div>
+
+                    <div class="game-tile coming-soon">
+                        <div class="game-tile-icon">🎤</div>
+                        <div class="game-tile-content">
+                            <h3 class="game-tile-title">Song Clash</h3>
+                            <p class="game-tile-description">Guess the song from emoji clues!</p>
+                            <div class="game-tile-badge">Coming Soon</div>
+                        </div>
+                    </div>
+
+                    <div class="game-tile coming-soon">
+                        <div class="game-tile-icon">🧠</div>
+                        <div class="game-tile-content">
+                            <h3 class="game-tile-title">Trivia Night</h3>
+                            <p class="game-tile-description">Test your knowledge together!</p>
+                            <div class="game-tile-badge">Coming Soon</div>
+                        </div>
                     </div>
                 </div>
+            </section>
+        </main>
 
-                <button class="btn btn-primary btn-large" onclick="Game.nextTurn()">
-                    Next Player
-                </button>
-            </div>
-        </div>
-
-        <!-- Victory Screen -->
-        <div id="screen-victory" class="screen">
-            <div class="screen-content center-content">
-                <div class="victory-celebration">
-                    <span class="victory-emoji">🎉</span>
-                    <span class="victory-emoji">🏆</span>
-                    <span class="victory-emoji">🎉</span>
-                </div>
-                <h1 class="victory-title">Victory!</h1>
-                <p class="victory-subtitle">You reached the goal!</p>
-
-                <div class="victory-stats">
-                    <div class="victory-stat">
-                        <span class="stat-value" id="victory-score">25</span>
-                        <span class="stat-label">Final Score</span>
-                    </div>
-                    <div class="victory-stat">
-                        <span class="stat-value" id="victory-turns">8</span>
-                        <span class="stat-label">Turns Taken</span>
-                    </div>
-                </div>
-
-                <div class="button-group vertical">
-                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
-                        Play Again
-                    </button>
-                    <button class="btn btn-secondary" onclick="Game.showWelcome()">
-                        Main Menu
-                    </button>
-                </div>
-            </div>
-        </div>
+        <footer class="hub-footer">
+            <p>Made for fun moments with friends & family</p>
+        </footer>
     </div>
-
-    <!-- Audio for timer warning (optional) -->
-    <audio id="audio-tick" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Onp6djHhiVE1RYHiMnp+Xh3FbSDs7RlhvhZSYkYFqVUU8PEhbcIWUmJF/aFRDOztHWXCFlZmRgGlUQzs7R1lwhZWZkYBpVEM7O0dZcIWVmZGAaVRDOztHWXCFlZmRgGlUQzs7R1lwhZWZkYBpVA==" type="audio/wav">
-    </audio>
-
-    <script src="js/decks.js"></script>
-    <script src="js/app.js"></script>
 </body>
 </html>
