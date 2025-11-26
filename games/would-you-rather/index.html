@@ -33,11 +33,11 @@
                 <div class="rules-card">
                     <h2>How to Play</h2>
                     <ul class="rules-list">
-                        <li><span class="rule-icon">👆</span> Everyone gets their own touch zone</li>
-                        <li><span class="rule-icon">🐾</span> Drag your animal token to show your answer</li>
-                        <li><span class="rule-icon">📊</span> Slide anywhere on the scale - not just A or B!</li>
-                        <li><span class="rule-icon">👀</span> Watch everyone's answers appear live</li>
-                        <li><span class="rule-icon">💬</span> Lock in, discuss, then continue!</li>
+                        <li><span class="rule-icon">📱</span> Pass one device around the group</li>
+                        <li><span class="rule-icon">🐾</span> Slide your animal token anywhere between A and B</li>
+                        <li><span class="rule-icon">✅</span> Tap Lock &amp; Pass to record your rating</li>
+                        <li><span class="rule-icon">🔁</span> Hand it to the next player until everyone votes</li>
+                        <li><span class="rule-icon">💬</span> Chat about the results, then go to the next dilemma!</li>
                     </ul>
                 </div>
 
@@ -102,22 +102,32 @@
             </div>
 
             <!-- Scale/spectrum area with tokens -->
-            <div class="scale-container">
-                <div class="scale-track">
-                    <div class="scale-gradient"></div>
-                    <div class="scale-tokens" id="scale-tokens">
-                        <!-- Player tokens appear here -->
+            <div class="question-main">
+                <div class="scale-container">
+                    <div class="scale-track" id="scale-track">
+                        <div class="scale-gradient"></div>
+                        <div class="scale-tokens" id="scale-tokens">
+                            <!-- Player tokens appear here -->
+                        </div>
+                    </div>
+                    <div class="scale-labels">
+                        <span class="scale-label-a">← A</span>
+                        <span class="scale-label-b">B →</span>
                     </div>
                 </div>
-                <div class="scale-labels">
-                    <span class="scale-label-a">← A</span>
-                    <span class="scale-label-b">B →</span>
-                </div>
-            </div>
 
-            <!-- Player touch zones -->
-            <div class="player-zones" id="player-zones">
-                <!-- Touch zones populated by JS -->
+                <div class="turn-card" id="turn-card">
+                    <div class="turn-info">
+                        <span class="turn-animal" id="current-player-animal">🐱</span>
+                        <div>
+                            <p class="turn-label" id="current-player-label">Player 1, take your turn.</p>
+                            <p class="turn-hint" id="turn-hint">Slide anywhere between A and B, then tap lock.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" id="lock-btn" onclick="Game.lockCurrentPlayer()" disabled>
+                        Lock &amp; Pass
+                    </button>
+                </div>
             </div>
 
             <!-- Status and next button -->
