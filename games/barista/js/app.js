@@ -35,11 +35,11 @@ const Game = {
         this.cacheDom();
         this.bindAirlockPads();
         this.renderNameInputs();
-        this.showScreen('welcome');
+        this.renderBoard();
+        this.setShiftMessage('Clock in to split the screen and start brewing.');
     },
 
     cacheDom() {
-        this.screens = document.querySelectorAll('.screen');
         this.nameGrid = document.getElementById('player-names');
         this.playerCountDisplay = document.getElementById('player-count-display');
         this.playerGrid = document.getElementById('player-grid');
@@ -69,8 +69,8 @@ const Game = {
             });
         };
 
-        bindPad(document.getElementById('airlock-left'), 'left');
-        bindPad(document.getElementById('airlock-right'), 'right');
+        bindPad(this.airlockLeft, 'left');
+        bindPad(this.airlockRight, 'right');
     },
 
     setHold(side, value) {
@@ -88,26 +88,6 @@ const Game = {
         if (this.state.holdState.left && this.state.holdState.right) {
             this.completeTransfer();
         }
-    },
-
-    showScreen(id) {
-        this.screens.forEach(screen => {
-            if (screen.id === `screen-${id}`) {
-                screen.classList.add('active');
-                screen.removeAttribute('aria-hidden');
-            } else {
-                screen.classList.remove('active');
-                screen.setAttribute('aria-hidden', 'true');
-            }
-        });
-    },
-
-    showWelcome() {
-        this.showScreen('welcome');
-    },
-
-    showSetup() {
-        this.showScreen('setup');
     },
 
     adjustPlayerCount(delta) {
@@ -154,7 +134,6 @@ const Game = {
         }
 
         this.renderBoard();
-        this.showScreen('game');
         this.setShiftMessage('Stations assigned! Tap a ticket to begin.');
     },
 
@@ -188,7 +167,8 @@ const Game = {
             status: 'queued',
             location: 'counter',
             awaitingTransfer: null,
-            workingPlayer: null
+            workingPlayer: null,
+            lastStation: null
         };
 
         this.state.tickets.push(ticket);
@@ -234,7 +214,9 @@ const Game = {
 
         step.status = 'done';
         ticket.workingPlayer = null;
+        const finishedType = step.type;
         ticket.currentStep += 1;
+        ticket.lastStation = finishedType;
 
         if (ticket.currentStep >= ticket.steps.length) {
             ticket.status = 'ready';
@@ -341,10 +323,18 @@ const Game = {
         this.renderTickets();
         this.renderAirlock();
         this.updateCounters();
+        if (this.playerGrid) {
+            const splits = Math.max(1, this.state.players.length || 1);
+            this.playerGrid.style.setProperty('--split-count', splits);
+        }
     },
 
     renderPlayers() {
         if (!this.playerGrid) return;
+        if (!this.state.players.length) {
+            this.playerGrid.innerHTML = '<p class="queue-empty">Assign stations to populate the split screen.</p>';
+            return;
+        }
         const html = this.state.players.map(player => {
             const stationHtml = player.stations.map(stationId => this.renderStationCard(player, stationId)).join('');
             const holding = this.state.tickets.filter(ticket => ticket.location === player.id).length;
@@ -363,37 +353,74 @@ const Game = {
 
     renderStationCard(player, stationId) {
         const station = StationMap[stationId];
-        const tickets = this.getActionableTickets(player.id, stationId);
-        const transferNeeded = this.state.tickets.filter(ticket => ticket.awaitingTransfer === player.id && ticket.location !== player.id);
+        const readyTickets = this.getActionableTickets(player.id, stationId);
+        const incomingTransfers = this.state.tickets.filter(ticket => {
+            if (ticket.awaitingTransfer !== player.id || ticket.location === player.id) return false;
+            const nextStep = ticket.steps[ticket.currentStep];
+            return nextStep && nextStep.type === stationId;
+        });
+        const outgoingTickets = this.state.tickets.filter(ticket => {
+            return ticket.location === player.id
+                && ticket.awaitingTransfer
+                && ticket.lastStation === stationId;
+        });
 
-        const queueItems = tickets.length ? tickets.map(ticket => {
+        const incomingReadyHtml = readyTickets.map(ticket => {
             const stepNumber = ticket.currentStep + 1;
             const total = ticket.steps.length;
+            const fromName = ticket.location === 'counter' ? 'Counter' : this.getPlayerName(ticket.location);
             const working = ticket.workingPlayer === player.id;
-            const button = working
+            const actions = working
                 ? '<span class="working-pill">Brewing…</span>'
                 : `<button class="btn btn-primary btn-mini" onclick="Game.workStep('${ticket.id}', '${player.id}', '${stationId}')">Work</button>`;
             return `
-                <div class="queue-item">
+                <div class="flow-item">
                     <div>
                         <strong>${ticket.name}</strong>
-                        <div class="queue-meta">Step ${stepNumber}/${total}</div>
+                        <div class="flow-meta">Step ${stepNumber}/${total} · from ${fromName}</div>
                     </div>
-                    ${button}
-                </div>
-            `;
-        }).join('') : `<div class="queue-empty">No drinks waiting</div>`;
-
-        const transferBlocks = transferNeeded.map(ticket => {
-            const fromName = this.getPlayerName(ticket.location);
-            const disabled = this.state.pendingTransfer && this.state.pendingTransfer.ticketId !== ticket.id;
-            return `
-                <div class="station-alert ${disabled ? 'disabled' : ''}">
-                    Awaiting ${player.name}! ${fromName} needs you.
-                    <button class="btn btn-outline btn-mini" ${disabled ? 'disabled' : ''} onclick="Game.queueTransfer('${ticket.id}', '${ticket.location}', '${player.id}')">Grab via Airlock</button>
+                    <div class="flow-actions">${actions}</div>
                 </div>
             `;
         }).join('');
+
+        const incomingTransferHtml = incomingTransfers.map(ticket => {
+            const fromName = this.getPlayerName(ticket.location);
+            const activeTransfer = this.state.pendingTransfer && this.state.pendingTransfer.ticketId === ticket.id;
+            const disabled = this.state.pendingTransfer && this.state.pendingTransfer.ticketId !== ticket.id;
+            const control = activeTransfer
+                ? '<span class="status-pill">On the Airlock</span>'
+                : `<button class="btn btn-outline btn-mini" ${disabled ? 'disabled' : ''} onclick="Game.queueTransfer('${ticket.id}', '${ticket.location}', '${player.id}')">Grab via Airlock</button>`;
+            return `
+                <div class="flow-item pending">
+                    <div>
+                        <strong>${ticket.name}</strong>
+                        <div class="flow-meta">Waiting on ${fromName}</div>
+                    </div>
+                    <div class="flow-actions">${control}</div>
+                </div>
+            `;
+        }).join('');
+
+        const outgoingHtml = outgoingTickets.length ? outgoingTickets.map(ticket => {
+            const toName = this.getPlayerName(ticket.awaitingTransfer);
+            const activeTransfer = this.state.pendingTransfer && this.state.pendingTransfer.ticketId === ticket.id;
+            const disabled = this.state.pendingTransfer && this.state.pendingTransfer.ticketId !== ticket.id;
+            const control = activeTransfer
+                ? '<span class="status-pill">On the Airlock</span>'
+                : `<button class="btn btn-outline btn-mini" ${disabled ? 'disabled' : ''} onclick="Game.queueTransfer('${ticket.id}', '${player.id}', '${ticket.awaitingTransfer}')">Send via Airlock</button>`;
+            return `
+                <div class="flow-item">
+                    <div>
+                        <strong>${ticket.name}</strong>
+                        <div class="flow-meta">Send to ${toName}</div>
+                    </div>
+                    <div class="flow-actions">${control}</div>
+                </div>
+            `;
+        }).join('') : '<div class="queue-empty">Nothing to send</div>';
+
+        const incomingHtml = (incomingReadyHtml + incomingTransferHtml) || '<div class="queue-empty">No drinks incoming</div>';
 
         return `
             <div class="station-card" data-type="${stationId}">
@@ -404,8 +431,20 @@ const Game = {
                         <div class="station-description">${station.description}</div>
                     </div>
                 </div>
-                <div class="station-queue">${queueItems}</div>
-                ${transferBlocks}
+                <div class="station-lanes">
+                    <div class="flow-lane">
+                        <div class="flow-label">Incoming Shelf</div>
+                        <div class="flow-list">
+                            ${incomingHtml}
+                        </div>
+                    </div>
+                    <div class="flow-lane">
+                        <div class="flow-label">Outgoing Shelf</div>
+                        <div class="flow-list">
+                            ${outgoingHtml}
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     },
