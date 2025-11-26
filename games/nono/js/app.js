@@ -129,6 +129,10 @@ const Game = {
         if (screen) {
             screen.classList.add('active');
             this.state.currentScreen = screenName;
+
+            // Scroll to top of screen
+            window.scrollTo(0, 0);
+            screen.scrollTop = 0;
         }
     },
 
