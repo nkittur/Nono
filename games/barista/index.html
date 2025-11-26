@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Barista Relay - Cooperate through a dual-touch airlock to craft drinks together.">
+    <meta name="theme-color" content="#9b5c34">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Barista Relay - Dual-Touch Drink Building</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">☕</span>
+                    <h1 class="logo-text">Barista Relay</h1>
+                </div>
+                <p class="tagline">Pass drinks through the Dual-Touch Airlock!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">🧾</span> Grab a ticket from the counter.</li>
+                        <li><span class="rule-icon">🧑‍🍳</span> Each player runs two random stations.</li>
+                        <li><span class="rule-icon">🤝</span> Need another station? Use the dual-touch airlock.</li>
+                        <li><span class="rule-icon">🚨</span> Drinks only move when both sides hold the airlock.</li>
+                        <li><span class="rule-icon">🏆</span> Drop finished drinks on their ticket to score.</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Clock In
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Crew Setup</h2>
+
+                <div class="setup-section">
+                    <h3>Number of Baristas</h3>
+                    <div class="player-count">
+                        <button class="btn btn-icon" onclick="Game.adjustPlayerCount(-1)">−</button>
+                        <span id="player-count-display" class="count-display">3</span>
+                        <button class="btn btn-icon" onclick="Game.adjustPlayerCount(1)">+</button>
+                    </div>
+                    <p class="setup-hint">2 - 4 players recommended</p>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Names</h3>
+                    <div id="player-names" class="names-grid">
+                        <!-- populated by JS -->
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Shift Options</h3>
+                    <div class="shift-options">
+                        <label class="option-pill">
+                            <input type="checkbox" id="rush-mode" checked>
+                            <span>Start with Rush Tickets</span>
+                        </label>
+                        <label class="option-pill">
+                            <input type="checkbox" id="auto-refill" checked>
+                            <span>Auto refill tickets</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" onclick="Game.startShift()">Assign Stations</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="screen-game" class="screen">
+            <div class="barista-header">
+                <div class="shift-status">
+                    <div class="status-label">Tickets Completed</div>
+                    <div class="status-value" id="tickets-done">0</div>
+                </div>
+                <div class="shift-status">
+                    <div class="status-label">In Queue</div>
+                    <div class="status-value" id="tickets-queue">0</div>
+                </div>
+                <div class="shift-message" id="shift-message">Stations assigned! Tap a ticket to begin.</div>
+            </div>
+
+            <div class="barista-grid">
+                <section class="players-panel">
+                    <h2>Stations</h2>
+                    <div id="player-grid" class="player-grid">
+                        <!-- dynamic -->
+                    </div>
+                </section>
+
+                <section class="counter-panel">
+                    <div class="counter-header">
+                        <div>
+                            <h2>Counter Tickets</h2>
+                            <p class="counter-hint">Place finished drinks back here to score.</p>
+                        </div>
+                        <button class="btn btn-outline" onclick="Game.addTicket()">Add Ticket</button>
+                    </div>
+                    <div id="ticket-board" class="ticket-board">
+                        <!-- dynamic -->
+                    </div>
+                </section>
+            </div>
+
+            <section class="airlock-section" id="airlock-panel">
+                <div class="airlock-info">
+                    <h3>Dual-Touch Airlock</h3>
+                    <p id="airlock-status">Waiting for a handoff...</p>
+                </div>
+                <div class="airlock-console">
+                    <div class="airlock-pad" id="airlock-left">
+                        <span class="pad-label" id="airlock-left-label">Hold</span>
+                        <span class="pad-icon">✋</span>
+                    </div>
+                    <div class="airlock-core" id="airlock-core">⚡</div>
+                    <div class="airlock-pad" id="airlock-right">
+                        <span class="pad-label" id="airlock-right-label">Hold</span>
+                        <span class="pad-icon">🤚</span>
+                    </div>
+                </div>
+                <p class="airlock-tip">The drink only moves while both pads are held. "Grab it! Grab it!"</p>
+            </section>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
