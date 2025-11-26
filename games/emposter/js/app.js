@@ -15,7 +15,11 @@ const Game = {
         impostorIndex: -1,
         currentPrompt: null,
         playerEmojis: [],
-        usedPrompts: []
+        usedPrompts: [],
+        scores: [],
+        scoringEnabled: true,
+        roundOutcomeAwarded: false,
+        impostorGuessAwarded: false
     },
 
     // DOM Elements
@@ -26,6 +30,7 @@ const Game = {
      */
     init() {
         this.cacheElements();
+        this.bindEvents();
         this.renderCategories();
         this.loadSettings();
         this.showScreen('welcome');
@@ -51,6 +56,7 @@ const Game = {
             playerCount: document.getElementById('player-count'),
             roundCount: document.getElementById('round-count'),
             categoryGrid: document.getElementById('category-grid'),
+            scoringToggle: document.getElementById('scoring-toggle'),
             // Pass
             currentPlayerName: document.getElementById('current-player-name'),
             // Prompt
@@ -76,10 +82,34 @@ const Game = {
             impostorWord: document.getElementById('impostor-word'),
             roundStatus: document.getElementById('round-status'),
             nextRoundBtn: document.getElementById('next-round-btn'),
+            scoreMessage: document.getElementById('score-message'),
+            scoreboard: document.getElementById('scoreboard'),
+            finalScoreboard: document.getElementById('final-scoreboard'),
+            finalScoreboardCard: document.getElementById('final-scoreboard-card'),
+            scoringActions: document.querySelector('.scoring-actions'),
+            crewWinBtn: document.getElementById('crew-win-btn'),
+            impostorWinBtn: document.getElementById('impostor-win-btn'),
+            impostorGuessSection: document.getElementById('impostor-guess-section'),
+            impostorGuessInput: document.getElementById('impostor-guess-input'),
+            impostorGuessFeedback: document.getElementById('impostor-guess-feedback'),
+            impostorGuessBtn: document.getElementById('impostor-guess-btn'),
             // Game Over
             finalRounds: document.getElementById('final-rounds'),
             finalPlayers: document.getElementById('final-players')
         };
+    },
+
+    /**
+     * Setup event listeners for controls
+     */
+    bindEvents() {
+        if (this.elements.scoringToggle) {
+            this.elements.scoringToggle.addEventListener('change', (event) => {
+                this.state.scoringEnabled = event.target.checked;
+                this.updateScoringUI();
+                this.saveSettings();
+            });
+        }
     },
 
     /**
@@ -102,9 +132,17 @@ const Game = {
                     this.state.selectedCategories = settings.selectedCategories;
                     this.updateCategoryUI();
                 }
+                if (typeof settings.scoringEnabled === 'boolean') {
+                    this.state.scoringEnabled = settings.scoringEnabled;
+                } else if (typeof settings.impostorGuessEnabled === 'boolean') {
+                    // backward compatibility
+                    this.state.scoringEnabled = settings.impostorGuessEnabled;
+                }
             }
+            this.updateScoringUI();
         } catch (e) {
             console.log('Could not load settings');
+            this.updateScoringUI();
         }
     },
 
@@ -116,7 +154,8 @@ const Game = {
             localStorage.setItem('emposter-settings', JSON.stringify({
                 playerCount: this.state.playerCount,
                 roundCount: this.state.roundCount,
-                selectedCategories: this.state.selectedCategories
+                selectedCategories: this.state.selectedCategories,
+                scoringEnabled: this.state.scoringEnabled
             }));
         } catch (e) {
             console.log('Could not save settings');
@@ -237,6 +276,9 @@ const Game = {
         // Reset game state
         this.state.currentRound = 0;
         this.state.usedPrompts = [];
+        this.state.scores = Array.from({ length: this.state.playerCount }, () => 0);
+        this.resetRoundScoringState();
+        this.updateScoreboardDisplays();
 
         // Start first round
         this.startRound();
@@ -249,6 +291,7 @@ const Game = {
         this.state.currentRound++;
         this.state.currentPlayerIndex = 0;
         this.state.playerEmojis = [];
+        this.resetRoundScoringState();
 
         // Pick random impostor
         this.state.impostorIndex = Math.floor(Math.random() * this.state.playerCount);
@@ -477,6 +520,12 @@ const Game = {
             this.elements.nextRoundBtn.textContent = "Next Round";
         }
 
+        if (!this.state.roundOutcomeAwarded) {
+            this.setScoreMessage('');
+        }
+        this.updateScoringUI();
+        this.updateScoreboardDisplays();
+
         this.showScreen('result');
     },
 
@@ -497,6 +546,7 @@ const Game = {
     showGameOver() {
         this.elements.finalRounds.textContent = this.state.roundCount;
         this.elements.finalPlayers.textContent = this.state.playerCount;
+        this.updateScoreboardDisplays();
         this.showScreen('gameover');
     },
 
@@ -506,7 +556,282 @@ const Game = {
     playAgain() {
         this.state.currentRound = 0;
         this.state.usedPrompts = [];
+        this.state.scores = Array.from({ length: this.state.playerCount }, () => 0);
+        this.resetRoundScoringState();
+        this.updateScoreboardDisplays();
         this.startRound();
+    },
+
+    /**
+     * Allow the impostor to submit a guess for the real word
+     */
+    submitImpostorGuess() {
+        if (!this.state.scoringEnabled || this.state.impostorGuessAwarded) {
+            return;
+        }
+        if (!this.elements.impostorGuessInput || !this.state.currentPrompt) {
+            return;
+        }
+        const guess = this.elements.impostorGuessInput.value.trim();
+        if (guess.length === 0) {
+            this.setGuessFeedback('Enter a guess before checking.', false, true);
+            return;
+        }
+
+        const realWord = this.state.currentPrompt.real;
+        const isCorrect = this.normalizeWord(guess) === this.normalizeWord(realWord);
+        this.state.impostorGuessAwarded = true;
+
+        if (this.elements.impostorGuessBtn) {
+            this.elements.impostorGuessBtn.disabled = true;
+        }
+
+        if (isCorrect) {
+            this.adjustScore(this.state.impostorIndex, 2);
+            this.setGuessFeedback('Correct! The impostor earns 2 points.', true);
+        } else {
+            this.setGuessFeedback('Close, but not quite. No bonus this time.', false);
+        }
+
+        this.updateScoreboardDisplays();
+    },
+
+    /**
+     * Crew successfully found the impostor
+     */
+    handleCrewWin() {
+        if (!this.state.scoringEnabled) {
+            this.setScoreMessage('Turn scoring on during setup to award points.');
+            return;
+        }
+        if (this.state.roundOutcomeAwarded) {
+            this.setScoreMessage('Points already assigned for this round.');
+            return;
+        }
+        if (!this.state.scores.length) {
+            this.setScoreMessage('Start a game to track scores.');
+            return;
+        }
+        this.state.roundOutcomeAwarded = true;
+        this.state.scores.forEach((_, index) => {
+            if (index !== this.state.impostorIndex) {
+                this.state.scores[index] += 1;
+            }
+        });
+        this.setScoreMessage('Great job! Everyone except the impostor gets 1 point.');
+        this.disableOutcomeButtons();
+        this.updateScoreboardDisplays();
+    },
+
+    /**
+     * Impostor avoided detection
+     */
+    handleImpostorWin() {
+        if (!this.state.scoringEnabled) {
+            this.setScoreMessage('Turn scoring on during setup to award points.');
+            return;
+        }
+        if (this.state.roundOutcomeAwarded) {
+            this.setScoreMessage('Points already assigned for this round.');
+            return;
+        }
+        if (!this.state.scores.length) {
+            this.setScoreMessage('Start a game to track scores.');
+            return;
+        }
+        this.state.roundOutcomeAwarded = true;
+        this.adjustScore(this.state.impostorIndex, 1);
+        this.setScoreMessage('Sneaky! The impostor gets 1 point.');
+        this.disableOutcomeButtons();
+        this.updateScoreboardDisplays();
+    },
+
+    updateScoringUI() {
+        const enabled = this.state.scoringEnabled;
+
+        if (this.elements.scoringToggle) {
+            this.elements.scoringToggle.checked = enabled;
+        }
+
+        const sectionsToToggle = [
+            this.elements.impostorGuessSection,
+            this.elements.scoringActions,
+            this.elements.scoreboard,
+            this.elements.scoreMessage,
+            this.elements.finalScoreboardCard
+        ];
+
+        sectionsToToggle.forEach(section => {
+            if (section) {
+                section.style.display = enabled ? '' : 'none';
+            }
+        });
+
+        if (this.elements.impostorGuessBtn) {
+            this.elements.impostorGuessBtn.disabled = !enabled || this.state.impostorGuessAwarded;
+        }
+
+        if (!enabled) {
+            this.setGuessFeedback('');
+            this.setScoreMessage('');
+            this.disableOutcomeButtons();
+        } else if (!this.state.roundOutcomeAwarded) {
+            this.enableOutcomeButtons();
+        }
+
+        this.updateScoreboardDisplays();
+    },
+
+    /**
+     * Reset per-round scoring UI state
+     */
+    resetRoundScoringState() {
+        this.state.roundOutcomeAwarded = false;
+        this.state.impostorGuessAwarded = false;
+        if (this.elements.scoreMessage) {
+            this.elements.scoreMessage.textContent = '';
+        }
+        if (this.elements.impostorGuessFeedback) {
+            this.elements.impostorGuessFeedback.textContent = '';
+            this.elements.impostorGuessFeedback.className = 'guess-feedback';
+        }
+        if (this.elements.impostorGuessInput) {
+            this.elements.impostorGuessInput.value = '';
+        }
+        this.enableOutcomeButtons();
+        if (this.elements.impostorGuessBtn) {
+            this.elements.impostorGuessBtn.disabled = !this.state.scoringEnabled;
+        }
+    },
+
+    /**
+     * Update scoreboard components with latest totals
+     */
+    updateScoreboardDisplays() {
+        if (!this.state.scoringEnabled) {
+            if (this.elements.scoreboard) {
+                this.elements.scoreboard.innerHTML = '';
+            }
+            if (this.elements.finalScoreboard) {
+                this.elements.finalScoreboard.innerHTML = '';
+            }
+            return;
+        }
+        if (this.elements.scoreboard) {
+            this.elements.scoreboard.innerHTML = this.renderScoreboardMarkup('Scores will appear after the first round.');
+        }
+        if (this.elements.finalScoreboard) {
+            this.elements.finalScoreboard.innerHTML = this.renderScoreboardMarkup('Play a round to see final scores.');
+        }
+    },
+
+    /**
+     * Build scoreboard rows markup
+     */
+    renderScoreboardMarkup(emptyLabel = 'No scores yet.') {
+        if (!this.state.scores.length) {
+            return `<p class="scoreboard-empty">${emptyLabel}</p>`;
+        }
+        return this.state.scores.map((score, index) => {
+            const suffix = score === 1 ? 'pt' : 'pts';
+            return `
+                <div class="score-row">
+                    <span class="score-player">Player ${index + 1}</span>
+                    <span class="score-points">${score} ${suffix}</span>
+                </div>
+            `;
+        }).join('');
+    },
+
+    /**
+     * Utility: normalize word comparison
+     */
+    normalizeWord(word) {
+        return (word || '')
+            .toString()
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/gi, '')
+            .replace(/\s+/g, ' ');
+    },
+
+    /**
+     * Utility: adjust single player score
+     */
+    adjustScore(index, delta) {
+        if (!Array.isArray(this.state.scores)) {
+            return;
+        }
+        if (typeof index !== 'number' || index < 0 || index >= this.state.scores.length) {
+            return;
+        }
+        this.state.scores[index] += delta;
+    },
+
+    /**
+     * Update score message helper
+     */
+    setScoreMessage(message) {
+        if (this.elements.scoreMessage) {
+            this.elements.scoreMessage.textContent = message || '';
+        }
+    },
+
+    /**
+     * Update guess feedback helper
+     */
+    setGuessFeedback(message, isSuccess = false, isValidation = false) {
+        if (!this.elements.impostorGuessFeedback) {
+            return;
+        }
+        const classes = ['guess-feedback'];
+        if (!message) {
+            this.elements.impostorGuessFeedback.className = classes.join(' ');
+            this.elements.impostorGuessFeedback.textContent = '';
+            return;
+        }
+        if (isValidation) {
+            classes.push('error');
+        } else if (isSuccess) {
+            classes.push('success');
+        } else {
+            classes.push('error');
+        }
+        this.elements.impostorGuessFeedback.className = classes.join(' ');
+        this.elements.impostorGuessFeedback.textContent = message;
+    },
+
+    /**
+     * Disable scoring buttons after awarding
+     */
+    disableOutcomeButtons() {
+        if (this.elements.crewWinBtn) {
+            this.elements.crewWinBtn.disabled = true;
+        }
+        if (this.elements.impostorWinBtn) {
+            this.elements.impostorWinBtn.disabled = true;
+        }
+    },
+
+    /**
+     * Enable scoring buttons if allowed
+     */
+    enableOutcomeButtons() {
+        if (!this.state.scoringEnabled) {
+            if (this.elements.crewWinBtn) {
+                this.elements.crewWinBtn.disabled = true;
+            }
+            if (this.elements.impostorWinBtn) {
+                this.elements.impostorWinBtn.disabled = true;
+            }
+            return;
+        }
+        if (this.elements.crewWinBtn) {
+            this.elements.crewWinBtn.disabled = false;
+        }
+        if (this.elements.impostorWinBtn) {
+            this.elements.impostorWinBtn.disabled = false;
+        }
     },
 
     /**
@@ -517,6 +842,8 @@ const Game = {
         this.state.currentPlayerIndex = 0;
         this.state.playerEmojis = [];
         this.state.usedPrompts = [];
+        this.state.scores = [];
+        this.updateScoreboardDisplays();
     }
 };
 
