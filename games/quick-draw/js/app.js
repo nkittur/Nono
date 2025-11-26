@@ -21,6 +21,8 @@ const Game = {
         inkUsed: 0,
         maxStrokes: 7,
         maxInk: 1200,
+        canvasWidth: 0,
+        canvasHeight: 0,
         isDrawing: false,
         // Timers
         drawTime: 45,
@@ -33,6 +35,8 @@ const Game = {
     ctx: null,
     displayCanvas: null,
     displayCtx: null,
+    renderScale: 1,
+    canvasResizeFrame: null,
 
     // DOM Elements
     elements: {},
@@ -45,6 +49,7 @@ const Game = {
         this.renderCategories();
         this.loadSettings();
         this.showScreen('welcome');
+        window.addEventListener('resize', () => this.handleResize());
     },
 
     /**
@@ -78,6 +83,7 @@ const Game = {
             drawTimer: document.getElementById('draw-timer'),
             canvasMessage: document.getElementById('canvas-message'),
             undoBtn: document.getElementById('undo-btn'),
+            canvasContainer: document.querySelector('.canvas-container'),
             // Answer
             answerIcon: document.getElementById('answer-icon'),
             answerTitle: document.getElementById('answer-title'),
@@ -347,10 +353,9 @@ const Game = {
         this.state.inkUsed = 0;
         this.state.isDrawing = false;
 
-        // Setup canvas
-        this.setupCanvas();
-
-        // Update UI
+        // Show drawing screen and size canvas once layout is ready
+        this.showScreen('draw');
+        this.queueCanvasSetup(false);
         this.updateDrawUI();
 
         // Start timer
@@ -358,29 +363,78 @@ const Game = {
         this.updateTimerDisplay();
         this.startTimer();
 
-        this.showScreen('draw');
+    },
+
+    queueCanvasSetup(restoreDrawing = false) {
+        if (this.state.currentScreen !== 'draw') return;
+
+        if (this.canvasResizeFrame) {
+            cancelAnimationFrame(this.canvasResizeFrame);
+        }
+
+        this.canvasResizeFrame = requestAnimationFrame(() => {
+            this.canvasResizeFrame = null;
+            if (this.state.currentScreen !== 'draw') return;
+            this.setupCanvas(restoreDrawing);
+        });
+    },
+
+    handleResize() {
+        if (this.state.currentScreen !== 'draw') return;
+        this.queueCanvasSetup(true);
+    },
+
+    resetCanvasSurface() {
+        if (!this.ctx || !this.canvas) return;
+        const scale = this.renderScale || 1;
+        const width = this.state.canvasWidth || (this.canvas.width / scale);
+        const height = this.state.canvasHeight || (this.canvas.height / scale);
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(0, 0, width, height);
+        this.ctx.beginPath();
     },
 
     /**
      * Setup canvas
      */
-    setupCanvas() {
-        const container = document.querySelector('.canvas-container');
-        const width = container.clientWidth - 10;
-        const height = container.clientHeight - 10;
+    setupCanvas(restoreDrawing = false) {
+        if (!this.canvas || !this.ctx) return;
 
-        this.canvas.width = width;
-        this.canvas.height = height;
+        const container = this.elements.canvasContainer;
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        if (rect.width < 10 || rect.height < 10) {
+            this.queueCanvasSetup(restoreDrawing);
+            return;
+        }
+
+        const width = Math.floor(rect.width);
+        const height = Math.floor(rect.height);
+        const scale = window.devicePixelRatio || 1;
+
+        this.renderScale = scale;
+        this.state.canvasWidth = width;
+        this.state.canvasHeight = height;
+
+        this.canvas.style.width = `${width}px`;
+        this.canvas.style.height = `${height}px`;
+        this.canvas.width = Math.round(width * scale);
+        this.canvas.height = Math.round(height * scale);
 
         // Setup context
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(scale, scale);
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         this.ctx.lineWidth = 4;
         this.ctx.strokeStyle = '#1f2937';
 
-        // Clear canvas
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillRect(0, 0, width, height);
+        if (restoreDrawing && this.state.strokes.length > 0) {
+            this.redrawCanvas();
+        } else {
+            this.resetCanvasSurface();
+        }
 
         // Setup events
         this.setupCanvasEvents();
@@ -551,8 +605,7 @@ const Game = {
         this.state.strokeCount = 0;
         this.state.inkUsed = 0;
 
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.resetCanvasSurface();
 
         this.updateDrawUI();
     },
@@ -561,8 +614,7 @@ const Game = {
      * Redraw canvas from strokes
      */
     redrawCanvas() {
-        this.ctx.fillStyle = 'white';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.resetCanvasSurface();
 
         this.ctx.strokeStyle = '#1f2937';
         this.ctx.lineWidth = 4;
