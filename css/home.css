@@ -68,149 +68,136 @@
 }
 
 .section-title {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 /* ========================================
-   Games Grid
+   Games Grid - 2 Column Layout
    ======================================== */
 
 .games-grid {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
 }
 
 /* ========================================
-   Game Tile
+   Game Tile - Compact & Colorful
    ======================================== */
 
 .game-tile {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-md);
+    justify-content: center;
+    text-align: center;
+    gap: var(--space-xs);
     background: var(--bg-card);
     border-radius: var(--radius-lg);
-    padding: var(--space-lg);
+    padding: var(--space-md);
     text-decoration: none;
     color: inherit;
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
     border: 2px solid transparent;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+}
+
+.game-tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--tile-color, var(--color-primary));
 }
 
 .game-tile:hover {
-    background: var(--bg-card-light);
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--tile-color, var(--color-primary));
 }
 
 .game-tile:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
 }
 
-/* Coming Soon Tiles */
-.game-tile.coming-soon {
-    opacity: 0.6;
-    cursor: default;
-}
-
-.game-tile.coming-soon:hover {
-    background: var(--bg-card);
-    border-color: transparent;
-    transform: none;
-    box-shadow: none;
-}
+/* Tile Color Variants */
+.tile-red { --tile-color: #ef4444; }
+.tile-amber { --tile-color: #f59e0b; }
+.tile-emerald { --tile-color: #10b981; }
+.tile-violet { --tile-color: #8b5cf6; }
+.tile-purple { --tile-color: #a855f7; }
+.tile-pink { --tile-color: #ec4899; }
+.tile-blue { --tile-color: #3b82f6; }
+.tile-cyan { --tile-color: #06b6d4; }
 
 /* Tile Icon */
 .game-tile-icon {
     font-size: 2.5rem;
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-card-light);
-    border-radius: var(--radius-md);
-    flex-shrink: 0;
-}
-
-.game-tile:hover:not(.coming-soon) .game-tile-icon {
-    background: rgba(99, 102, 241, 0.2);
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* Tile Content */
 .game-tile-content {
-    flex: 1;
-    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
 }
 
 .game-tile-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 var(--space-xs) 0;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .game-tile-description {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin: 0 0 var(--space-sm) 0;
-    line-height: 1.4;
-}
-
-/* Meta info (players, time) */
-.game-tile-meta {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.3;
+    opacity: 0.8;
 }
 
-.meta-item svg {
-    opacity: 0.7;
+/* Coming Soon Tiles */
+.game-tile.coming-soon {
+    opacity: 0.5;
+    cursor: default;
 }
 
-/* Coming Soon Badge */
+.game-tile.coming-soon::before {
+    background: var(--text-muted);
+}
+
+.game-tile.coming-soon:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: transparent;
+}
+
 .game-tile-badge {
     display: inline-block;
-    padding: var(--space-xs) var(--space-sm);
+    padding: 2px var(--space-xs);
     background: var(--bg-card-light);
     border-radius: var(--radius-sm);
-    font-size: 0.75rem;
+    font-size: 0.6rem;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-}
-
-/* Arrow Icon */
-.game-tile-arrow {
-    color: var(--text-muted);
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
-}
-
-.game-tile:hover:not(.coming-soon) .game-tile-arrow {
-    color: var(--color-primary);
-    transform: translateX(4px);
-}
-
-.game-tile.coming-soon .game-tile-arrow {
-    display: none;
+    margin-top: var(--space-xs);
 }
 
 /* ========================================
@@ -218,24 +205,48 @@
    ======================================== */
 
 .hub-footer {
-    padding: var(--space-lg);
-    padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+    padding: var(--space-md);
+    padding-bottom: calc(var(--space-md) + var(--safe-area-bottom));
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
 }
 
 .hub-footer .version {
-    font-size: 0.75rem;
-    opacity: 0.6;
-    margin-top: var(--space-xs);
+    font-size: 0.65rem;
+    opacity: 0.5;
+    margin-top: 2px;
 }
 
 /* ========================================
    Responsive - Larger Screens
    ======================================== */
 
-@media (min-width: 600px) {
+@media (min-width: 500px) {
+    .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-md);
+    }
+
+    .game-tile {
+        min-height: 140px;
+        padding: var(--space-lg);
+    }
+
+    .game-tile-icon {
+        font-size: 3rem;
+    }
+
+    .game-tile-title {
+        font-size: 1.1rem;
+    }
+
+    .game-tile-description {
+        font-size: 0.8rem;
+    }
+}
+
+@media (min-width: 700px) {
     .hub-header {
         padding: var(--space-xl);
         padding-top: calc(var(--space-xl) + var(--safe-area-top));
@@ -254,41 +265,7 @@
     }
 
     .games-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-lg);
-    }
-
-    .game-tile {
-        flex-direction: column;
-        text-align: center;
-        padding: var(--space-xl);
-    }
-
-    .game-tile-icon {
-        width: 80px;
-        height: 80px;
-        font-size: 3rem;
-    }
-
-    .game-tile-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .game-tile-meta {
-        justify-content: center;
-    }
-
-    .game-tile-arrow {
-        display: none;
-    }
-}
-
-@media (min-width: 900px) {
-    .games-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
@@ -297,13 +274,26 @@
    ======================================== */
 
 .game-tile {
-    animation: fadeIn var(--transition-normal) ease;
+    animation: tileIn 0.3s ease;
     animation-fill-mode: both;
 }
 
+@keyframes tileIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .game-tile:nth-child(1) { animation-delay: 0ms; }
-.game-tile:nth-child(2) { animation-delay: 50ms; }
-.game-tile:nth-child(3) { animation-delay: 100ms; }
-.game-tile:nth-child(4) { animation-delay: 150ms; }
-.game-tile:nth-child(5) { animation-delay: 200ms; }
-.game-tile:nth-child(6) { animation-delay: 250ms; }
+.game-tile:nth-child(2) { animation-delay: 30ms; }
+.game-tile:nth-child(3) { animation-delay: 60ms; }
+.game-tile:nth-child(4) { animation-delay: 90ms; }
+.game-tile:nth-child(5) { animation-delay: 120ms; }
+.game-tile:nth-child(6) { animation-delay: 150ms; }
+.game-tile:nth-child(7) { animation-delay: 180ms; }
+.game-tile:nth-child(8) { animation-delay: 210ms; }
