@@ -21,78 +21,18 @@
     </a>
 
     <div id="app">
-        <!-- Welcome Screen -->
-        <div id="screen-welcome" class="screen active">
-            <div class="screen-content">
+        <header class="hero">
+            <div class="hero-left">
                 <div class="logo">
                     <span class="logo-icon">☕</span>
-                    <h1 class="logo-text">Barista Relay</h1>
+                    <div>
+                        <h1 class="logo-text">Barista Relay</h1>
+                        <p class="tagline">Single-screen relay. Every column is a barista section.</p>
+                    </div>
                 </div>
-                <p class="tagline">Pass drinks through the Dual-Touch Airlock!</p>
-
-                <div class="rules-card">
-                    <h2>How to Play</h2>
-                    <ul class="rules-list">
-                        <li><span class="rule-icon">🧾</span> Grab a ticket from the counter.</li>
-                        <li><span class="rule-icon">🧑‍🍳</span> Each player runs two random stations.</li>
-                        <li><span class="rule-icon">🤝</span> Need another station? Use the dual-touch airlock.</li>
-                        <li><span class="rule-icon">🚨</span> Drinks only move when both sides hold the airlock.</li>
-                        <li><span class="rule-icon">🏆</span> Drop finished drinks on their ticket to score.</li>
-                    </ul>
-                </div>
-
-                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
-                    Clock In
-                </button>
+                <p class="hero-note">Assign stations, split the screen, and keep drinks moving through each lane.</p>
             </div>
-        </div>
-
-        <!-- Setup Screen -->
-        <div id="screen-setup" class="screen">
-            <div class="screen-content">
-                <h2 class="screen-title">Crew Setup</h2>
-
-                <div class="setup-section">
-                    <h3>Number of Baristas</h3>
-                    <div class="player-count">
-                        <button class="btn btn-icon" onclick="Game.adjustPlayerCount(-1)">−</button>
-                        <span id="player-count-display" class="count-display">3</span>
-                        <button class="btn btn-icon" onclick="Game.adjustPlayerCount(1)">+</button>
-                    </div>
-                    <p class="setup-hint">2 - 4 players recommended</p>
-                </div>
-
-                <div class="setup-section">
-                    <h3>Names</h3>
-                    <div id="player-names" class="names-grid">
-                        <!-- populated by JS -->
-                    </div>
-                </div>
-
-                <div class="setup-section">
-                    <h3>Shift Options</h3>
-                    <div class="shift-options">
-                        <label class="option-pill">
-                            <input type="checkbox" id="rush-mode" checked>
-                            <span>Start with Rush Tickets</span>
-                        </label>
-                        <label class="option-pill">
-                            <input type="checkbox" id="auto-refill" checked>
-                            <span>Auto refill tickets</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
-                    <button class="btn btn-primary" onclick="Game.startShift()">Assign Stations</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Game Screen -->
-        <div id="screen-game" class="screen">
-            <div class="barista-header">
+            <div class="shift-status-group">
                 <div class="shift-status">
                     <div class="status-label">Tickets Completed</div>
                     <div class="status-value" id="tickets-done">0</div>
@@ -101,30 +41,74 @@
                     <div class="status-label">In Queue</div>
                     <div class="status-value" id="tickets-queue">0</div>
                 </div>
-                <div class="shift-message" id="shift-message">Stations assigned! Tap a ticket to begin.</div>
+            </div>
+        </header>
+
+        <section class="control-panel">
+            <div class="control-card">
+                <h3>Crew Size</h3>
+                <div class="player-count">
+                    <button class="btn btn-icon" onclick="Game.adjustPlayerCount(-1)">−</button>
+                    <span id="player-count-display" class="count-display">3</span>
+                    <button class="btn btn-icon" onclick="Game.adjustPlayerCount(1)">+</button>
+                </div>
+                <p class="setup-hint">2 - 4 players recommended</p>
             </div>
 
-            <div class="barista-grid">
-                <section class="players-panel">
-                    <h2>Stations</h2>
-                    <div id="player-grid" class="player-grid">
-                        <!-- dynamic -->
-                    </div>
-                </section>
-
-                <section class="counter-panel">
-                    <div class="counter-header">
-                        <div>
-                            <h2>Counter Tickets</h2>
-                            <p class="counter-hint">Place finished drinks back here to score.</p>
-                        </div>
-                        <button class="btn btn-outline" onclick="Game.addTicket()">Add Ticket</button>
-                    </div>
-                    <div id="ticket-board" class="ticket-board">
-                        <!-- dynamic -->
-                    </div>
-                </section>
+            <div class="control-card wide">
+                <h3>Barista Names</h3>
+                <div id="player-names" class="names-grid">
+                    <!-- populated by JS -->
+                </div>
             </div>
+
+            <div class="control-card">
+                <h3>Shift Options</h3>
+                <div class="shift-options">
+                    <label class="option-pill">
+                        <input type="checkbox" id="rush-mode" checked>
+                        <span>Start with Rush Tickets</span>
+                    </label>
+                    <label class="option-pill">
+                        <input type="checkbox" id="auto-refill" checked>
+                        <span>Auto refill tickets</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-card actions">
+                <h3>Shift Controls</h3>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="Game.startShift()">Assign Stations</button>
+                    <button class="btn btn-outline" onclick="Game.addTicket()">Add Ticket</button>
+                </div>
+                <p class="control-hint">Need a rush? Add tickets anytime.</p>
+            </div>
+        </section>
+
+        <div class="shift-message-board">
+            <p class="shift-message" id="shift-message">Clock in to split the screen and start brewing.</p>
+        </div>
+
+        <section class="arena">
+            <div id="player-grid" class="player-grid split-grid">
+                <!-- dynamic -->
+            </div>
+        </section>
+
+        <section class="shared-board">
+            <section class="counter-panel">
+                <div class="counter-header">
+                    <div>
+                        <h2>Counter Tickets</h2>
+                        <p class="counter-hint">Finished drinks return here to score.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="Game.addTicket()">Add Ticket</button>
+                </div>
+                <div id="ticket-board" class="ticket-board">
+                    <!-- dynamic -->
+                </div>
+            </section>
 
             <section class="airlock-section" id="airlock-panel">
                 <div class="airlock-info">
@@ -144,7 +128,7 @@
                 </div>
                 <p class="airlock-tip">The drink only moves while both pads are held. "Grab it! Grab it!"</p>
             </section>
-        </div>
+        </section>
     </div>
 
     <script src="js/app.js"></script>
