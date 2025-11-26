@@ -9,6 +9,9 @@ const PelotonGame = {
         steeringRate: 1.4,
         pedalImpulseStrength: 1.1,
         pedalImpulseDecay: 2.6,
+        pedalLeanStrength: 0.6,
+        pedalLeanDecay: 1.2,
+        maxLean: 2,
         energyGainPerSecond: 9,
         energyLossPerSecond: 18,
         syncWindowMs: 420,
@@ -17,10 +20,10 @@ const PelotonGame = {
         colors: ['#7dd3fc', '#fca5a5', '#6ee7b7', '#fde68a'],
         roles: ['Pace Lead', 'Shadow', 'Anchor', 'Shield'],
         controlBindings: [
-            { left: 'a', pedal: 's', right: 'd' },
-            { left: 'j', pedal: 'k', right: 'l' },
-            { left: 'f', pedal: 'g', right: 'h' },
-            { left: 'ArrowLeft', pedal: 'ArrowDown', right: 'ArrowRight' }
+            { leftPedal: 'a', rightPedal: 'd' },
+            { leftPedal: 'j', rightPedal: 'l' },
+            { leftPedal: 'f', rightPedal: 'h' },
+            { leftPedal: 'ArrowLeft', rightPedal: 'ArrowRight' }
         ]
     },
 
@@ -61,7 +64,7 @@ const PelotonGame = {
             paceReadout: document.getElementById('pace-readout'),
             harmonyMessage: document.getElementById('harmony-message'),
             playerPanels: document.getElementById('player-panels'),
-            controlGrid: document.getElementById('control-grid'),
+            touchControls: document.getElementById('touch-control-rails'),
             toast: document.getElementById('toast')
         };
 
@@ -72,14 +75,13 @@ const PelotonGame = {
     attachEvents() {
         window.addEventListener('resize', () => this.resizeCanvas());
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        document.addEventListener('keyup', (e) => this.handleKeyUp(e));
-        window.addEventListener('blur', () => this.releaseAllSteer());
     },
 
     buildKeyMap() {
         this.state.keyMap = {};
         this.config.controlBindings.forEach((binding, index) => {
             Object.entries(binding).forEach(([action, key]) => {
+                if (!key || typeof key !== 'string') return;
                 this.state.keyMap[key.toLowerCase()] = { player: index, action };
             });
         });
@@ -109,7 +111,7 @@ const PelotonGame = {
         this.stopLoop();
         this.createPlayers();
         this.renderPlayerPanels();
-        this.renderControlCards();
+        this.renderTouchControls();
 
         this.state.isRunning = true;
         this.state.lastFrame = performance.now();
@@ -134,6 +136,7 @@ const PelotonGame = {
             screen.classList.add('active');
             this.state.currentScreen = name;
             window.scrollTo({ top: 0 });
+            document.body.classList.toggle('peloton-immersive', name === 'game');
         }
     },
 
@@ -159,7 +162,7 @@ const PelotonGame = {
                 color,
                 angle,
                 targetAngle: angle,
-                steerInput: 0,
+                steerBias: 0,
                 pedalImpulse: 0,
                 lastPedal: 0,
                 energy: 75,
@@ -205,95 +208,110 @@ const PelotonGame = {
         });
     },
 
-    renderControlCards() {
-        if (!this.elements.controlGrid) return;
-        this.elements.controlGrid.innerHTML = '';
+    renderTouchControls() {
+        if (!this.elements.touchControls) return;
+        this.elements.touchControls.innerHTML = '';
         this.state.controlButtons = [];
 
-        this.state.players.forEach((player, index) => {
-            const binding = this.config.controlBindings[index];
-            const card = document.createElement('div');
-            card.className = 'control-card';
-            card.innerHTML = `
-                <div class="control-title">
-                    <span class="badge">P${index + 1}</span>
-                    <span>${player.label}</span>
-                </div>
-                <div class="control-buttons">
-                    <button class="control-btn ghost" data-action="left">
-                        ⟵<span>${binding.left.toUpperCase()}</span>
-                    </button>
-                    <button class="control-btn pedal" data-action="pedal">
-                        ⚡<span>${binding.pedal.toUpperCase()}</span>
-                    </button>
-                    <button class="control-btn ghost" data-action="right">
-                        ⟶<span>${binding.right.toUpperCase()}</span>
-                    </button>
-                </div>
-            `;
-            this.elements.controlGrid.appendChild(card);
+        const leftColumn = document.createElement('div');
+        leftColumn.className = 'touch-rail';
+        const rightColumn = document.createElement('div');
+        rightColumn.className = 'touch-rail';
+        this.elements.touchControls.appendChild(leftColumn);
+        this.elements.touchControls.appendChild(rightColumn);
 
-            const buttons = card.querySelectorAll('.control-btn');
-            const refs = {};
-            buttons.forEach((btn) => {
-                const action = btn.dataset.action;
-                refs[action] = btn;
-                if (action === 'pedal') {
-                    btn.addEventListener('mousedown', () => this.handlePedal(index));
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.handlePedal(index);
-                    }, { passive: false });
-                } else {
-                    const dir = action === 'left' ? -1 : 1;
-                    btn.addEventListener('mousedown', () => this.setSteer(index, dir));
-                    btn.addEventListener('mouseup', () => this.releaseSteer(index, dir));
-                    btn.addEventListener('mouseleave', () => this.releaseSteer(index, dir));
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.setSteer(index, dir);
-                    }, { passive: false });
-                    btn.addEventListener('touchend', () => this.releaseSteer(index, dir));
-                    btn.addEventListener('touchcancel', () => this.releaseSteer(index, dir));
-                }
-            });
+        const splitIndex = Math.ceil(this.state.playerCount / 2);
+        const formatKey = (key) => {
+            if (!key || typeof key !== 'string') return '—';
+            const normalized = key.toLowerCase();
+            const specials = {
+                arrowleft: '←',
+                arrowright: '→',
+                arrowup: '↑',
+                arrowdown: '↓'
+            };
+            if (specials[normalized]) return specials[normalized];
+            return key.length === 1 ? key.toUpperCase() : key.toUpperCase();
+        };
+        const withAlpha = (hex, alpha = 102) => {
+            if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) {
+                return `rgba(14, 165, 233, ${(alpha / 255).toFixed(2)})`;
+            }
+            if (hex.length === 9) return hex;
+            return `${hex}${alpha.toString(16).padStart(2, '0')}`;
+        };
+
+        this.state.players.forEach((player, index) => {
+            const binding = this.config.controlBindings[index] || {};
+            const column = index < splitIndex ? leftColumn : rightColumn;
+            const pad = document.createElement('div');
+            pad.className = 'touch-pad';
+            pad.style.borderColor = withAlpha(player.color, 140);
+            pad.style.boxShadow = `0 8px 28px ${withAlpha(player.color, 34)}, inset 0 0 0 1px ${withAlpha(player.color, 96)}`;
+
+            const label = document.createElement('div');
+            label.className = 'pad-label';
+            label.innerHTML = `
+                <span class="badge">P${index + 1}</span>
+                <span>${player.label}</span>
+            `;
+
+            const buttonsWrapper = document.createElement('div');
+            buttonsWrapper.className = 'pedal-buttons';
+
+            const leftBtn = document.createElement('button');
+            leftBtn.type = 'button';
+            leftBtn.className = 'pedal-btn pedal-left';
+            leftBtn.innerHTML = `
+                Left Pedal
+                <span>${formatKey(binding.leftPedal || binding.left)}</span>
+            `;
+
+            const rightBtn = document.createElement('button');
+            rightBtn.type = 'button';
+            rightBtn.className = 'pedal-btn pedal-right';
+            rightBtn.innerHTML = `
+                Right Pedal
+                <span>${formatKey(binding.rightPedal || binding.right)}</span>
+            `;
+
+            const refs = { left: leftBtn, right: rightBtn };
+
+            const bindButton = (btn, pedalSide) => {
+                btn.addEventListener('mousedown', () => this.handlePedal(index, pedalSide));
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handlePedal(index, pedalSide);
+                }, { passive: false });
+            };
+
+            bindButton(leftBtn, 'left');
+            bindButton(rightBtn, 'right');
+
+            buttonsWrapper.appendChild(leftBtn);
+            buttonsWrapper.appendChild(rightBtn);
+
+            pad.appendChild(label);
+            pad.appendChild(buttonsWrapper);
+            column.appendChild(pad);
             this.state.controlButtons.push(refs);
         });
     },
 
-    handlePedal(playerIndex) {
+    handlePedal(playerIndex, pedalSide = 'right') {
         const player = this.state.players[playerIndex];
         if (!player) return;
         const now = performance.now();
         player.lastPedal = now;
         player.pedalImpulse = Math.min(player.pedalImpulse + this.config.pedalImpulseStrength, 2.5);
-        this.flashControlButton(playerIndex, 'pedal');
+        const leanDir = pedalSide === 'left' ? -1 : 1; // left pedal pushes the bike right (clockwise)
+        player.steerBias = this.clamp(
+            player.steerBias + leanDir * this.config.pedalLeanStrength,
+            -this.config.maxLean,
+            this.config.maxLean
+        );
+        this.flashControlButton(playerIndex, pedalSide === 'left' ? 'left' : 'right');
         this.checkSync();
-    },
-
-    setSteer(playerIndex, direction) {
-        const player = this.state.players[playerIndex];
-        if (!player) return;
-        player.steerInput = direction;
-        this.setControlActive(playerIndex, direction);
-    },
-
-    releaseSteer(playerIndex, direction) {
-        const player = this.state.players[playerIndex];
-        if (!player) return;
-        if (player.steerInput === direction) {
-            player.steerInput = 0;
-        }
-        this.clearControlActive(playerIndex, direction);
-    },
-
-    releaseAllSteer() {
-        this.state.players.forEach((player, index) => {
-            player.steerInput = 0;
-            const refs = this.state.controlButtons[index];
-            if (refs?.left) refs.left.classList.remove('active');
-            if (refs?.right) refs.right.classList.remove('active');
-        });
     },
 
     flashControlButton(playerIndex, action) {
@@ -303,35 +321,23 @@ const PelotonGame = {
         setTimeout(() => btn.classList.remove('active'), 160);
     },
 
-    setControlActive(playerIndex, direction) {
-        const refs = this.state.controlButtons[playerIndex];
-        if (!refs) return;
-        if (direction === -1) {
-            refs.left?.classList.add('active');
-            refs.right?.classList.remove('active');
-        } else if (direction === 1) {
-            refs.right?.classList.add('active');
-            refs.left?.classList.remove('active');
-        }
-    },
-
-    clearControlActive(playerIndex, direction) {
-        const refs = this.state.controlButtons[playerIndex];
-        if (!refs) return;
-        if (direction === -1) refs.left?.classList.remove('active');
-        if (direction === 1) refs.right?.classList.remove('active');
-    },
-
     handleKeyDown(event) {
         const binding = this.state.keyMap[event.key.toLowerCase()];
         if (!binding) return;
         event.preventDefault();
         if (binding.player >= this.state.playerCount) return;
-        if (binding.action === 'pedal') {
-            this.handlePedal(binding.player);
-        } else {
-            const dir = binding.action === 'left' ? -1 : 1;
-            this.setSteer(binding.player, dir);
+        const action = binding.action;
+        if (!action) return;
+        if (action === 'pedal') {
+            this.handlePedal(binding.player, 'right');
+            return;
+        }
+        if (action === 'leftPedal' || action === 'left') {
+            this.handlePedal(binding.player, 'left');
+            return;
+        }
+        if (action === 'rightPedal' || action === 'right') {
+            this.handlePedal(binding.player, 'right');
         }
     },
 
@@ -340,8 +346,6 @@ const PelotonGame = {
         if (!binding) return;
         if (binding.player >= this.state.playerCount) return;
         if (binding.action === 'pedal') return;
-        const dir = binding.action === 'left' ? -1 : 1;
-        this.releaseSteer(binding.player, dir);
     },
 
     loop(timestamp) {
@@ -382,8 +386,10 @@ const PelotonGame = {
             teamSpeed *= 0.4;
         }
 
+        const leaderLean = leader.steerBias;
+        leader.steerBias = this.decayTowardsZero(leader.steerBias, this.config.pedalLeanDecay * dt);
         leader.angle = this.normalizeAngle(
-            leader.angle + (teamSpeed + leader.steerInput * this.config.steeringRate * 0.2 + leader.pedalImpulse * 0.15) * dt
+            leader.angle + (teamSpeed + leaderLean * this.config.steeringRate * 0.2 + leader.pedalImpulse * 0.15) * dt
         );
         leader.pedalImpulse = Math.max(0, leader.pedalImpulse - this.config.pedalImpulseDecay * dt);
 
@@ -392,7 +398,9 @@ const PelotonGame = {
             const targetAngle = this.normalizeAngle(leader.angle - this.config.spacingRad * i);
             player.targetAngle = targetAngle;
             const error = this.smallestAngleDiff(targetAngle, player.angle);
-            const manual = player.steerInput * this.config.steeringRate + player.pedalImpulse * 0.2;
+            const lean = player.steerBias;
+            player.steerBias = this.decayTowardsZero(player.steerBias, this.config.pedalLeanDecay * dt);
+            const manual = lean * this.config.steeringRate + player.pedalImpulse * 0.2;
             player.angle = this.normalizeAngle(player.angle + (error * this.config.snapStrength + manual) * dt);
             player.pedalImpulse = Math.max(0, player.pedalImpulse - this.config.pedalImpulseDecay * dt);
         }
@@ -558,9 +566,20 @@ const PelotonGame = {
         if (!canvas) return;
         const wrapper = canvas.parentElement;
         if (!wrapper) return;
-        const size = Math.min(wrapper.clientWidth, 700);
+        const rect = wrapper.getBoundingClientRect();
+        const size = Math.max(320, Math.min(rect.width, rect.height));
         canvas.width = size;
         canvas.height = size;
+    },
+
+    decayTowardsZero(value, amount) {
+        if (value > 0) {
+            return Math.max(0, value - amount);
+        }
+        if (value < 0) {
+            return Math.min(0, value + amount);
+        }
+        return 0;
     },
 
     degToRad(value) {
