@@ -33,11 +33,11 @@
                 <div class="rules-card">
                     <h2>How to Play</h2>
                     <ul class="rules-list">
-                        <li><span class="rule-icon">👆</span> Everyone places finger on screen</li>
-                        <li><span class="rule-icon">🅰️</span> Swipe LEFT for option A</li>
-                        <li><span class="rule-icon">🅱️</span> Swipe RIGHT for option B</li>
-                        <li><span class="rule-icon">🎉</span> All answers revealed together!</li>
-                        <li><span class="rule-icon">💬</span> Discuss and debate your choices</li>
+                        <li><span class="rule-icon">👆</span> Everyone gets their own touch zone</li>
+                        <li><span class="rule-icon">🐾</span> Drag your animal token to show your answer</li>
+                        <li><span class="rule-icon">📊</span> Slide anywhere on the scale - not just A or B!</li>
+                        <li><span class="rule-icon">👀</span> Watch everyone's answers appear live</li>
+                        <li><span class="rule-icon">💬</span> Lock in, discuss, then continue!</li>
                     </ul>
                 </div>
 
@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="setup-preview" id="setup-preview">
-                    <!-- Shows grid preview -->
+                    <!-- Shows animal tokens preview -->
                 </div>
 
                 <div class="button-group">
@@ -89,59 +89,46 @@
                 </div>
             </div>
 
-            <div class="question-options">
+            <!-- Options at top - left and right -->
+            <div class="options-row">
                 <div class="option option-a">
                     <span class="option-label">A</span>
                     <span class="option-text" id="option-a-text">Be able to fly</span>
                 </div>
-                <div class="option-divider">OR</div>
                 <div class="option option-b">
                     <span class="option-label">B</span>
                     <span class="option-text" id="option-b-text">Be able to read minds</span>
                 </div>
             </div>
 
-            <div class="voting-area" id="voting-area">
-                <!-- Player zones populated by JS -->
-            </div>
-
-            <div class="voting-status" id="voting-status">
-                <span id="votes-count">0</span> / <span id="votes-total">4</span> locked in
-            </div>
-        </div>
-
-        <!-- Reveal Screen -->
-        <div id="screen-reveal" class="screen">
-            <div class="reveal-question">
-                <div class="reveal-options">
-                    <div class="reveal-option option-a">
-                        <span class="option-label">A</span>
-                        <span class="option-text" id="reveal-option-a">Be able to fly</span>
-                        <div class="option-voters" id="voters-a"></div>
-                    </div>
-                    <div class="reveal-divider">VS</div>
-                    <div class="reveal-option option-b">
-                        <span class="option-label">B</span>
-                        <span class="option-text" id="reveal-option-b">Be able to read minds</span>
-                        <div class="option-voters" id="voters-b"></div>
+            <!-- Scale/spectrum area with tokens -->
+            <div class="scale-container">
+                <div class="scale-track">
+                    <div class="scale-gradient"></div>
+                    <div class="scale-tokens" id="scale-tokens">
+                        <!-- Player tokens appear here -->
                     </div>
                 </div>
-            </div>
-
-            <div class="reveal-tally">
-                <div class="tally-bar">
-                    <div class="tally-a" id="tally-a"></div>
-                    <div class="tally-b" id="tally-b"></div>
-                </div>
-                <div class="tally-counts">
-                    <span id="count-a">2</span>
-                    <span id="count-b">2</span>
+                <div class="scale-labels">
+                    <span class="scale-label-a">← A</span>
+                    <span class="scale-label-b">B →</span>
                 </div>
             </div>
 
-            <button class="btn btn-primary btn-large" onclick="Game.nextQuestion()" id="next-btn">
-                Next Question
-            </button>
+            <!-- Player touch zones -->
+            <div class="player-zones" id="player-zones">
+                <!-- Touch zones populated by JS -->
+            </div>
+
+            <!-- Status and next button -->
+            <div class="voting-footer">
+                <div class="voting-status">
+                    <span id="votes-count">0</span> / <span id="votes-total">4</span> locked in
+                </div>
+                <button class="btn btn-primary" id="next-btn" onclick="Game.nextQuestion()" disabled>
+                    Next Question
+                </button>
+            </div>
         </div>
 
         <!-- Game Over Screen -->

@@ -1,9 +1,12 @@
 /**
  * Would You Rather - Party Dilemmas Game
- * Main Game Logic with simultaneous voting
+ * Main Game Logic with linear scale voting and cute animal tokens
  */
 
 const Game = {
+    // Cute animal tokens for each player
+    ANIMALS: ['🐱', '🐶', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁'],
+
     // Game state
     state: {
         currentScreen: 'welcome',
@@ -11,9 +14,10 @@ const Game = {
         questionCount: 10,
         currentQuestion: 0,
         questions: [],
-        votes: [], // { choice: 'a' | 'b' | null, locked: false }
+        // Player data: { position: 0-100 (50 = center), locked: boolean, touchId: null }
+        players: [],
         // Touch tracking
-        touches: {}, // touchId -> { playerIndex, startX, startY }
+        touches: {}, // touchId -> { playerIndex, startX, zoneWidth }
         // Stats
         unanimousCount: 0,
         splitCount: 0
@@ -21,9 +25,6 @@ const Game = {
 
     // DOM elements
     elements: {},
-
-    // Swipe threshold
-    SWIPE_THRESHOLD: 50,
 
     /**
      * Initialize
@@ -43,7 +44,6 @@ const Game = {
                 welcome: document.getElementById('screen-welcome'),
                 setup: document.getElementById('screen-setup'),
                 question: document.getElementById('screen-question'),
-                reveal: document.getElementById('screen-reveal'),
                 gameover: document.getElementById('screen-gameover')
             },
             playerCount: document.getElementById('player-count'),
@@ -53,17 +53,10 @@ const Game = {
             questionTotal: document.getElementById('question-total'),
             optionAText: document.getElementById('option-a-text'),
             optionBText: document.getElementById('option-b-text'),
-            votingArea: document.getElementById('voting-area'),
+            scaleTokens: document.getElementById('scale-tokens'),
+            playerZones: document.getElementById('player-zones'),
             votesCount: document.getElementById('votes-count'),
             votesTotal: document.getElementById('votes-total'),
-            revealOptionA: document.getElementById('reveal-option-a'),
-            revealOptionB: document.getElementById('reveal-option-b'),
-            votersA: document.getElementById('voters-a'),
-            votersB: document.getElementById('voters-b'),
-            tallyA: document.getElementById('tally-a'),
-            tallyB: document.getElementById('tally-b'),
-            countA: document.getElementById('count-a'),
-            countB: document.getElementById('count-b'),
             nextBtn: document.getElementById('next-btn'),
             statQuestions: document.getElementById('stat-questions'),
             statUnanimous: document.getElementById('stat-unanimous'),
@@ -122,17 +115,20 @@ const Game = {
     },
 
     /**
-     * Update setup preview
+     * Update setup preview - show animal tokens
      */
     updateSetupPreview() {
         const preview = this.elements.setupPreview;
         preview.innerHTML = '';
 
         for (let i = 0; i < this.state.playerCount; i++) {
-            const zone = document.createElement('div');
-            zone.className = `preview-zone p${i + 1}`;
-            zone.textContent = `Player ${i + 1}`;
-            preview.appendChild(zone);
+            const token = document.createElement('div');
+            token.className = 'preview-token';
+            token.innerHTML = `
+                <span class="token-animal">${this.ANIMALS[i]}</span>
+                <span class="token-label">Player ${i + 1}</span>
+            `;
+            preview.appendChild(token);
         }
     },
 
@@ -161,30 +157,56 @@ const Game = {
         this.elements.optionAText.textContent = q.a;
         this.elements.optionBText.textContent = q.b;
 
-        // Reset votes
-        this.state.votes = [];
+        // Reset players
+        this.state.players = [];
         for (let i = 0; i < this.state.playerCount; i++) {
-            this.state.votes.push({ choice: null, locked: false });
+            this.state.players.push({
+                position: 50, // Start in the middle
+                locked: false,
+                touchId: null
+            });
         }
         this.state.touches = {};
 
-        // Setup voting zones
-        this.setupVotingZones();
+        // Setup UI
+        this.setupScaleTokens();
+        this.setupPlayerZones();
+        this.updateVoteStatus();
 
-        // Update status
-        this.elements.votesCount.textContent = '0';
-        this.elements.votesTotal.textContent = this.state.playerCount;
+        // Disable next button initially
+        this.elements.nextBtn.disabled = true;
+        this.elements.nextBtn.textContent =
+            this.state.currentQuestion >= this.state.questionCount - 1
+                ? 'See Results'
+                : 'Next Question';
 
         this.showScreen('question');
     },
 
     /**
-     * Setup voting zones
+     * Setup scale tokens (animal tokens on the gradient)
      */
-    setupVotingZones() {
-        const area = this.elements.votingArea;
-        area.innerHTML = '';
-        area.className = `voting-area players-${this.state.playerCount}`;
+    setupScaleTokens() {
+        const container = this.elements.scaleTokens;
+        container.innerHTML = '';
+
+        for (let i = 0; i < this.state.playerCount; i++) {
+            const token = document.createElement('div');
+            token.className = 'scale-token hidden';
+            token.id = `token-${i}`;
+            token.textContent = this.ANIMALS[i];
+            token.style.left = '50%';
+            container.appendChild(token);
+        }
+    },
+
+    /**
+     * Setup player touch zones
+     */
+    setupPlayerZones() {
+        const container = this.elements.playerZones;
+        container.innerHTML = '';
+        container.className = `player-zones players-${this.state.playerCount}`;
 
         for (let i = 0; i < this.state.playerCount; i++) {
             const zone = document.createElement('div');
@@ -193,9 +215,12 @@ const Game = {
 
             zone.innerHTML = `
                 <div class="zone-content">
-                    <span class="player-label">P${i + 1}</span>
-                    <span class="zone-hint">Swipe to choose</span>
-                    <span class="zone-choice"></span>
+                    <span class="zone-animal">${this.ANIMALS[i]}</span>
+                    <div>
+                        <span class="zone-label">Player ${i + 1}</span>
+                        <span class="zone-hint">Drag left or right</span>
+                        <span class="zone-status">Locked in!</span>
+                    </div>
                 </div>
             `;
 
@@ -205,7 +230,7 @@ const Game = {
             zone.addEventListener('touchend', (e) => this.handleTouchEnd(e, i), { passive: false });
             zone.addEventListener('touchcancel', (e) => this.handleTouchEnd(e, i), { passive: false });
 
-            area.appendChild(zone);
+            container.appendChild(zone);
         }
     },
 
@@ -214,24 +239,33 @@ const Game = {
      */
     handleTouchStart(e, playerIndex) {
         e.preventDefault();
-        const vote = this.state.votes[playerIndex];
-        if (vote.locked) return;
+        const player = this.state.players[playerIndex];
+        if (player.locked) return;
 
-        // Track new touches
+        const zone = e.currentTarget;
+
+        // Track the first new touch for this player
         for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = e.changedTouches[i];
 
             // Only track if this player doesn't have a touch yet
-            if (!this.state.touches[touch.identifier]) {
+            if (player.touchId === null) {
+                player.touchId = touch.identifier;
                 this.state.touches[touch.identifier] = {
                     playerIndex: playerIndex,
                     startX: touch.clientX,
-                    startY: touch.clientY
+                    startPosition: player.position,
+                    zoneWidth: zone.offsetWidth
                 };
 
-                const zone = e.currentTarget;
                 zone.classList.add('touching');
-                break; // Only one touch per player at a time
+
+                // Show the token (unhide)
+                const token = document.getElementById(`token-${playerIndex}`);
+                if (token) {
+                    token.classList.remove('hidden');
+                }
+                break;
             }
         }
     },
@@ -241,25 +275,31 @@ const Game = {
      */
     handleTouchMove(e, playerIndex) {
         e.preventDefault();
-        const vote = this.state.votes[playerIndex];
-        if (vote.locked) return;
+        const player = this.state.players[playerIndex];
+        if (player.locked || player.touchId === null) return;
 
         for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = e.changedTouches[i];
-            const trackingData = this.state.touches[touch.identifier];
 
-            if (trackingData && trackingData.playerIndex === playerIndex) {
+            if (touch.identifier === player.touchId) {
+                const trackingData = this.state.touches[touch.identifier];
+                if (!trackingData) return;
+
                 const deltaX = touch.clientX - trackingData.startX;
-                const zone = e.currentTarget;
+                // Calculate new position based on drag distance relative to zone width
+                // Full zone width = 100% movement
+                const deltaPercent = (deltaX / trackingData.zoneWidth) * 100;
+                let newPosition = trackingData.startPosition + deltaPercent;
 
-                // Show which direction they're leaning
-                zone.classList.remove('choosing-a', 'choosing-b');
+                // Clamp to 0-100
+                newPosition = Math.max(0, Math.min(100, newPosition));
+                player.position = newPosition;
 
-                if (deltaX < -this.SWIPE_THRESHOLD) {
-                    zone.classList.add('choosing-a');
-                } else if (deltaX > this.SWIPE_THRESHOLD) {
-                    zone.classList.add('choosing-b');
-                }
+                // Update token position
+                this.updateTokenPosition(playerIndex);
+
+                // Update zone visual feedback
+                this.updateZoneFeedback(e.currentTarget, newPosition);
             }
         }
     },
@@ -269,114 +309,120 @@ const Game = {
      */
     handleTouchEnd(e, playerIndex) {
         e.preventDefault();
-        const vote = this.state.votes[playerIndex];
+        const player = this.state.players[playerIndex];
 
         for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = e.changedTouches[i];
-            const trackingData = this.state.touches[touch.identifier];
 
-            if (trackingData && trackingData.playerIndex === playerIndex) {
-                if (!vote.locked) {
-                    const deltaX = touch.clientX - trackingData.startX;
-                    const zone = e.currentTarget;
+            if (touch.identifier === player.touchId) {
+                const zone = e.currentTarget;
+                zone.classList.remove('touching');
+                this.clearZoneFeedback(zone);
 
-                    zone.classList.remove('touching', 'choosing-a', 'choosing-b');
-
-                    // Determine choice based on swipe
-                    if (deltaX < -this.SWIPE_THRESHOLD) {
-                        this.lockVote(playerIndex, 'a', zone);
-                    } else if (deltaX > this.SWIPE_THRESHOLD) {
-                        this.lockVote(playerIndex, 'b', zone);
-                    }
+                if (!player.locked) {
+                    // Lock in the vote when finger lifts
+                    this.lockVote(playerIndex, zone);
                 }
 
                 // Clear tracking
                 delete this.state.touches[touch.identifier];
+                player.touchId = null;
             }
         }
+    },
+
+    /**
+     * Update token position on scale
+     */
+    updateTokenPosition(playerIndex) {
+        const player = this.state.players[playerIndex];
+        const token = document.getElementById(`token-${playerIndex}`);
+        if (token) {
+            token.style.left = `${player.position}%`;
+        }
+    },
+
+    /**
+     * Update zone visual feedback (pseudo-element indicators)
+     */
+    updateZoneFeedback(zone, position) {
+        // Position 0 = full left (A), 100 = full right (B)
+        const leftWidth = Math.max(0, 50 - position);
+        const rightWidth = Math.max(0, position - 50);
+
+        zone.style.setProperty('--left-indicator', `${leftWidth}%`);
+        zone.style.setProperty('--right-indicator', `${rightWidth}%`);
+    },
+
+    /**
+     * Clear zone feedback
+     */
+    clearZoneFeedback(zone) {
+        zone.style.removeProperty('--left-indicator');
+        zone.style.removeProperty('--right-indicator');
     },
 
     /**
      * Lock in a vote
      */
-    lockVote(playerIndex, choice, zone) {
-        const vote = this.state.votes[playerIndex];
-        vote.choice = choice;
-        vote.locked = true;
+    lockVote(playerIndex, zone) {
+        const player = this.state.players[playerIndex];
+        player.locked = true;
 
         // Update zone appearance
-        zone.classList.add('locked', `chose-${choice}`);
-        zone.querySelector('.zone-choice').textContent = choice.toUpperCase();
+        zone.classList.add('locked');
 
-        // Update vote count
-        const lockedCount = this.state.votes.filter(v => v.locked).length;
+        // Add bounce animation to token
+        const token = document.getElementById(`token-${playerIndex}`);
+        if (token) {
+            token.classList.add('locked');
+            // Remove animation class after it completes
+            setTimeout(() => token.classList.remove('locked'), 300);
+        }
+
+        this.updateVoteStatus();
+    },
+
+    /**
+     * Update vote status display
+     */
+    updateVoteStatus() {
+        const lockedCount = this.state.players.filter(p => p.locked).length;
         this.elements.votesCount.textContent = lockedCount;
+        this.elements.votesTotal.textContent = this.state.playerCount;
 
-        // Check if all voted
+        // Enable next button when all locked
         if (lockedCount === this.state.playerCount) {
-            setTimeout(() => this.showReveal(), 500);
+            this.elements.nextBtn.disabled = false;
+            this.trackStats();
         }
     },
 
     /**
-     * Show reveal screen
+     * Track stats for this question
      */
-    showReveal() {
-        const q = this.state.questions[this.state.currentQuestion];
-
-        // Set question text
-        this.elements.revealOptionA.textContent = q.a;
-        this.elements.revealOptionB.textContent = q.b;
-
-        // Count votes
+    trackStats() {
+        // Count A vs B based on position (< 50 = A, >= 50 = B)
         let countA = 0;
         let countB = 0;
 
-        this.elements.votersA.innerHTML = '';
-        this.elements.votersB.innerHTML = '';
-
-        this.state.votes.forEach((vote, i) => {
-            const badge = document.createElement('span');
-            badge.className = `voter-badge p${i + 1}`;
-            badge.textContent = `P${i + 1}`;
-
-            if (vote.choice === 'a') {
+        this.state.players.forEach(p => {
+            if (p.position < 50) {
                 countA++;
-                this.elements.votersA.appendChild(badge);
             } else {
                 countB++;
-                this.elements.votersB.appendChild(badge);
             }
         });
 
-        // Update counts
-        this.elements.countA.textContent = countA;
-        this.elements.countB.textContent = countB;
-
-        // Update tally bar
-        const total = countA + countB;
-        const percentA = total > 0 ? (countA / total) * 100 : 50;
-        const percentB = total > 0 ? (countB / total) * 100 : 50;
-
-        this.elements.tallyA.style.width = `${percentA}%`;
-        this.elements.tallyB.style.width = `${percentB}%`;
-
-        // Track stats
+        // Check for unanimous (all same side)
         if (countA === this.state.playerCount || countB === this.state.playerCount) {
             this.state.unanimousCount++;
         }
+
+        // Check for 50/50 split (only possible with even player count)
         if (countA === countB && this.state.playerCount % 2 === 0) {
             this.state.splitCount++;
         }
-
-        // Update button text
-        if (this.state.currentQuestion >= this.state.questionCount - 1) {
-            this.elements.nextBtn.textContent = 'See Results';
-        } else {
-            this.elements.nextBtn.textContent = 'Next Question';
-        }
-
-        this.showScreen('reveal');
     },
 
     /**
