@@ -1,0 +1,673 @@
+/* ========================================
+   Emposter - Find the Emoji Impostor!
+   Game-specific styles (shared.css provides base)
+   ======================================== */
+
+:root {
+    --emposter-primary: #7c3aed;
+    --emposter-primary-light: #a78bfa;
+    --emposter-primary-dark: #5b21b6;
+    --emposter-accent: #f59e0b;
+    --emposter-impostor: #ef4444;
+}
+
+#app {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    flex: 1;
+    padding: var(--space-lg);
+    padding-top: calc(var(--space-lg) + var(--safe-area-top) + 50px);
+    padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+    animation: fadeIn var(--transition-normal);
+    overflow-y: auto;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.screen-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.screen-content.center-content {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.screen-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+/* ========================================
+   Welcome Screen
+   ======================================== */
+
+.logo {
+    text-align: center;
+    margin-bottom: var(--space-md);
+}
+
+.logo-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: var(--space-sm);
+    animation: sway 3s ease-in-out infinite;
+}
+
+@keyframes sway {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.logo-text {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--emposter-primary), var(--emposter-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.tagline {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-bottom: var(--space-xl);
+}
+
+.rules-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.rules-card h2 {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.rules-list {
+    list-style: none;
+}
+
+.rules-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.rule-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   Setup Screen
+   ======================================== */
+
+.setup-section {
+    margin-bottom: var(--space-xl);
+}
+
+.setup-section h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+}
+
+.setup-hint {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-md);
+    text-align: center;
+}
+
+/* Player/Round Selector */
+.player-selector,
+.round-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+}
+
+.count-display {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--emposter-primary);
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Category Grid */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+}
+
+.category-option {
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.category-option:hover {
+    background: var(--bg-card-light);
+}
+
+.category-option.selected {
+    border-color: var(--emposter-primary);
+    background: rgba(124, 58, 237, 0.15);
+}
+
+.category-emoji {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-xs);
+}
+
+.category-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Button Group */
+.button-group {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: auto;
+    padding-top: var(--space-lg);
+}
+
+.button-group.vertical {
+    flex-direction: column;
+}
+
+/* Override btn-primary color for this game */
+#app .btn-primary {
+    background: var(--emposter-primary);
+}
+
+#app .btn-primary:hover {
+    background: var(--emposter-primary-dark);
+}
+
+/* ========================================
+   Pass Device Screen
+   ======================================== */
+
+.pass-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-lg);
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.pass-title {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.player-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--emposter-primary);
+    margin-bottom: var(--space-lg);
+}
+
+.pass-hint {
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    font-size: 0.95rem;
+}
+
+/* Pulse animation */
+.btn.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.5); }
+    50% { box-shadow: 0 0 0 15px rgba(124, 58, 237, 0); }
+}
+
+/* ========================================
+   Prompt Screen
+   ======================================== */
+
+.prompt-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    transition: all var(--transition-normal);
+}
+
+.prompt-card.impostor {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+    border: 2px solid var(--emposter-impostor);
+}
+
+.prompt-label {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.prompt-word {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    line-height: 1.3;
+}
+
+.prompt-role {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+    display: inline-block;
+}
+
+.prompt-role.impostor {
+    background: var(--emposter-impostor);
+    color: white;
+}
+
+.prompt-role.normal {
+    background: var(--color-success);
+    color: white;
+}
+
+.prompt-instruction {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: var(--space-lg);
+}
+
+/* ========================================
+   Emoji Input Screen
+   ======================================== */
+
+.input-hint {
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+
+.emoji-input-container {
+    margin-bottom: var(--space-xl);
+}
+
+.emoji-input {
+    width: 100%;
+    padding: var(--space-xl);
+    font-size: 3rem;
+    text-align: center;
+    background: var(--bg-card);
+    border: 3px solid var(--bg-card-light);
+    border-radius: var(--radius-xl);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.emoji-input:focus {
+    border-color: var(--emposter-primary);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
+}
+
+.emoji-input::placeholder {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+.input-tips {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-xl);
+}
+
+/* ========================================
+   Reveal Screen
+   ======================================== */
+
+.reveal-hint {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xl);
+}
+
+.emoji-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.emoji-entry {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    text-align: center;
+    animation: cardIn var(--transition-normal);
+    animation-fill-mode: both;
+}
+
+.emoji-entry:nth-child(1) { animation-delay: 0ms; }
+.emoji-entry:nth-child(2) { animation-delay: 100ms; }
+.emoji-entry:nth-child(3) { animation-delay: 200ms; }
+.emoji-entry:nth-child(4) { animation-delay: 300ms; }
+.emoji-entry:nth-child(5) { animation-delay: 400ms; }
+.emoji-entry:nth-child(6) { animation-delay: 500ms; }
+.emoji-entry:nth-child(7) { animation-delay: 600ms; }
+.emoji-entry:nth-child(8) { animation-delay: 700ms; }
+.emoji-entry:nth-child(9) { animation-delay: 800ms; }
+.emoji-entry:nth-child(10) { animation-delay: 900ms; }
+
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.entry-player {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--emposter-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.entry-emojis {
+    font-size: 2.5rem;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+/* ========================================
+   Voting Screen
+   ======================================== */
+
+.vote-hint {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xl);
+    line-height: 1.5;
+}
+
+.countdown-container {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: var(--space-xl);
+}
+
+.countdown-container.active {
+    display: flex;
+}
+
+.countdown-number {
+    font-size: 6rem;
+    font-weight: 800;
+    color: var(--emposter-primary);
+    animation: countPop 0.5s ease;
+}
+
+@keyframes countPop {
+    0% { transform: scale(1.5); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.voting-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.vote-option {
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.vote-option:hover {
+    background: var(--bg-card-light);
+    border-color: var(--emposter-primary);
+}
+
+/* ========================================
+   Result Screen
+   ======================================== */
+
+.result-reveal {
+    margin-bottom: var(--space-xl);
+}
+
+.result-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+    animation: bounce 1s ease-in-out infinite;
+}
+
+.result-title {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.impostor-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--emposter-impostor);
+    margin-bottom: var(--space-lg);
+}
+
+.word-reveal {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    width: 100%;
+    max-width: 350px;
+}
+
+.word-pair {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.word-item {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.word-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.word-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-success);
+}
+
+.word-item.impostor .word-text {
+    color: var(--emposter-impostor);
+}
+
+.round-status {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+/* ========================================
+   Game Over Screen
+   ======================================== */
+
+.gameover-celebration {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.celebration-emoji {
+    font-size: 3rem;
+    animation: celebrate 1s ease-in-out infinite;
+}
+
+.celebration-emoji:nth-child(1) { animation-delay: 0s; }
+.celebration-emoji:nth-child(2) { animation-delay: 0.2s; }
+.celebration-emoji:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes celebrate {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-10px) rotate(-5deg); }
+    75% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.gameover-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--emposter-primary), var(--emposter-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-sm);
+}
+
+.gameover-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-bottom: var(--space-xl);
+}
+
+.final-stats {
+    display: flex;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.stat-box {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--emposter-primary);
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 380px) {
+    .logo-text {
+        font-size: 2.5rem;
+    }
+
+    .emoji-input {
+        font-size: 2.5rem;
+        padding: var(--space-lg);
+    }
+
+    .entry-emojis {
+        font-size: 2rem;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .screen {
+        padding: var(--space-xl);
+        padding-top: calc(var(--space-xl) + var(--safe-area-top) + 50px);
+    }
+
+    .emoji-gallery {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .entry-emojis {
+        font-size: 3rem;
+    }
+}
+
+/* Landscape mode */
+@media (max-height: 500px) and (orientation: landscape) {
+    .screen-content.center-content {
+        justify-content: flex-start;
+        padding-top: var(--space-md);
+    }
+
+    .prompt-card {
+        padding: var(--space-lg);
+    }
+
+    .logo-icon,
+    .pass-icon,
+    .result-icon {
+        font-size: 2.5rem;
+    }
+}

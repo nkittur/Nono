@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Emposter - The emoji impostor game! Describe with emojis, find the fake.">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Emposter - Find the Emoji Impostor!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🕵️</span>
+                    <h1 class="logo-text">Emposter</h1>
+                </div>
+                <p class="tagline">Find the Emoji Impostor!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">📝</span> Everyone gets a word to describe with emojis</li>
+                        <li><span class="rule-icon">🕵️</span> But ONE player is the Impostor with a different word!</li>
+                        <li><span class="rule-icon">👀</span> After everyone submits, all emojis are revealed</li>
+                        <li><span class="rule-icon">🗣️</span> Discuss and vote on who the Impostor is</li>
+                        <li><span class="rule-icon">🎭</span> Impostor: Blend in! Others: Find the fake!</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Let's Play!
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Game Setup</h2>
+
+                <div class="setup-section">
+                    <h3>Number of Players</h3>
+                    <div class="player-selector">
+                        <button class="btn btn-icon" onclick="Game.adjustPlayers(-1)">−</button>
+                        <span id="player-count" class="count-display">4</span>
+                        <button class="btn btn-icon" onclick="Game.adjustPlayers(1)">+</button>
+                    </div>
+                    <p class="setup-hint">3-10 players recommended</p>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Categories</h3>
+                    <p class="setup-hint">Select at least one</p>
+                    <div class="category-grid" id="category-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Rounds to Play</h3>
+                    <div class="round-selector">
+                        <button class="btn btn-icon" onclick="Game.adjustRounds(-1)">−</button>
+                        <span id="round-count" class="count-display">3</span>
+                        <button class="btn btn-icon" onclick="Game.adjustRounds(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" onclick="Game.startGame()">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pass Device Screen -->
+        <div id="screen-pass" class="screen">
+            <div class="screen-content center-content">
+                <div class="pass-icon">📱</div>
+                <h2 class="pass-title">Pass to</h2>
+                <div class="player-name" id="current-player-name">Player 1</div>
+                <p class="pass-hint">Only this player should look at the next screen!</p>
+
+                <button class="btn btn-primary btn-large pulse" onclick="Game.showPrompt()">
+                    I'm Ready
+                </button>
+            </div>
+        </div>
+
+        <!-- Prompt Screen -->
+        <div id="screen-prompt" class="screen">
+            <div class="screen-content center-content">
+                <div class="prompt-card" id="prompt-card">
+                    <div class="prompt-label" id="prompt-label">Your word is:</div>
+                    <div class="prompt-word" id="prompt-word">Pizza</div>
+                    <div class="prompt-role" id="prompt-role"></div>
+                </div>
+
+                <p class="prompt-instruction">Describe this with emojis!</p>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showInput()">
+                    Got It!
+                </button>
+            </div>
+        </div>
+
+        <!-- Emoji Input Screen -->
+        <div id="screen-input" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Enter Your Emojis</h2>
+                <p class="input-hint">Tap the box and use your emoji keyboard</p>
+
+                <div class="emoji-input-container">
+                    <input type="text"
+                           id="emoji-input"
+                           class="emoji-input"
+                           placeholder="🎯 Tap here for emojis"
+                           autocomplete="off"
+                           autocorrect="off"
+                           autocapitalize="off"
+                           spellcheck="false">
+                </div>
+
+                <div class="input-tips">
+                    <p>💡 Tip: Use 2-5 emojis for best results</p>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.submitEmojis()" id="submit-btn">
+                    Submit
+                </button>
+            </div>
+        </div>
+
+        <!-- Reveal Screen -->
+        <div id="screen-reveal" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Everyone's Emojis!</h2>
+                <p class="reveal-hint">Discuss: Who seems suspicious? 🤔</p>
+
+                <div class="emoji-gallery" id="emoji-gallery">
+                    <!-- Populated by JS -->
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showVoting()">
+                    Time to Vote!
+                </button>
+            </div>
+        </div>
+
+        <!-- Voting Screen -->
+        <div id="screen-voting" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Who's the Impostor?</h2>
+                <p class="vote-hint">Everyone point at who you think it is, then count on 3!</p>
+
+                <div class="countdown-container" id="countdown-container">
+                    <div class="countdown-number" id="countdown-number">3</div>
+                </div>
+
+                <div class="voting-options" id="voting-options">
+                    <!-- Populated by JS -->
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.startCountdown()">
+                    Count Down!
+                </button>
+                <button class="btn btn-secondary" onclick="Game.showResult()" id="reveal-btn" style="display: none;">
+                    Reveal Impostor
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="screen-result" class="screen">
+            <div class="screen-content center-content">
+                <div class="result-reveal">
+                    <div class="result-icon" id="result-icon">🕵️</div>
+                    <h2 class="result-title" id="result-title">The Impostor was...</h2>
+                    <div class="impostor-name" id="impostor-name">Player 3</div>
+                </div>
+
+                <div class="word-reveal">
+                    <div class="word-pair">
+                        <div class="word-item">
+                            <span class="word-label">Real Word:</span>
+                            <span class="word-text" id="real-word">Pizza</span>
+                        </div>
+                        <div class="word-item impostor">
+                            <span class="word-label">Impostor Word:</span>
+                            <span class="word-text" id="impostor-word">Italian Food</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="round-status" id="round-status">
+                    Round 1 of 3
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.nextRound()" id="next-round-btn">
+                    Next Round
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="screen-gameover" class="screen">
+            <div class="screen-content center-content">
+                <div class="gameover-celebration">
+                    <span class="celebration-emoji">🎉</span>
+                    <span class="celebration-emoji">🕵️</span>
+                    <span class="celebration-emoji">🎉</span>
+                </div>
+                <h1 class="gameover-title">Game Complete!</h1>
+                <p class="gameover-subtitle">Hope you had fun finding impostors!</p>
+
+                <div class="final-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="final-rounds">3</span>
+                        <span class="stat-label">Rounds Played</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="final-players">4</span>
+                        <span class="stat-label">Players</span>
+                    </div>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
+                        Play Again
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../../'">
+                        All Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/prompts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
