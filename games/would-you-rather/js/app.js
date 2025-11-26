@@ -18,6 +18,7 @@ const Game = {
         players: [],
         currentPlayerIndex: 0,
         activePointerId: null,
+        revealVotes: false,
         // Stats
         unanimousCount: 0,
         splitCount: 0
@@ -171,6 +172,7 @@ const Game = {
         }
         this.state.currentPlayerIndex = 0;
         this.state.activePointerId = null;
+        this.state.revealVotes = false;
 
         // Setup UI
         this.setupScaleTokens();
@@ -313,9 +315,14 @@ const Game = {
             if (!token) return;
 
             this.updateTokenPosition(index);
-            token.classList.toggle('active', index === this.state.currentPlayerIndex && !player.locked);
-            token.classList.toggle('pending', index !== this.state.currentPlayerIndex && !player.locked);
-            token.classList.toggle('locked', player.locked);
+            const isCurrentPlayer = index === this.state.currentPlayerIndex && !player.locked;
+            const shouldRevealVotes = this.state.revealVotes;
+            const shouldShowToken = shouldRevealVotes || isCurrentPlayer;
+
+            token.classList.toggle('hidden-vote', !shouldShowToken);
+            token.classList.toggle('active', isCurrentPlayer && shouldShowToken);
+            token.classList.toggle('pending', !player.locked && !isCurrentPlayer && shouldShowToken);
+            token.classList.toggle('locked', player.locked && shouldRevealVotes);
         });
     },
 
@@ -351,6 +358,7 @@ const Game = {
 
         // Enable next button when all locked
         if (lockedCount === this.state.playerCount) {
+            this.state.revealVotes = true;
             this.elements.nextBtn.disabled = false;
             if (this.elements.lockBtn) {
                 this.elements.lockBtn.disabled = true;
@@ -360,6 +368,8 @@ const Game = {
         } else {
             this.elements.nextBtn.disabled = true;
         }
+
+        this.updateTokenStates();
     },
 
     /**

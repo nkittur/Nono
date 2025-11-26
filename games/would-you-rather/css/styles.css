@@ -234,7 +234,6 @@
 
 #screen-question {
     padding: 0;
-    display: flex;
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
@@ -243,6 +242,7 @@
 
 #screen-question.active {
     display: flex;
+    flex-direction: column;
 }
 
 .question-header {
@@ -379,6 +379,11 @@
     opacity: 1;
     transform: translateX(-50%) scale(1);
     animation: tokenBounce 0.3s ease;
+}
+
+.scale-token.hidden-vote {
+    opacity: 0;
+    pointer-events: none;
 }
 
 @keyframes tokenBounce {
