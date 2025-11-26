@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Peloton Pulse - keep the squad drafted and in sync.">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Peloton Pulse - Team Biking Sync Game</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚴</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🚴‍♀️</span>
+                    <div>
+                        <h1 class="logo-text">Peloton Pulse</h1>
+                        <p class="tagline">Draft in sync or drag the whole squad.</p>
+                    </div>
+                </div>
+
+                <div class="rules-card">
+                    <h2>Team Briefing</h2>
+                    <ul class="rules-list">
+                        <li><span>🧑‍🤝‍🧑</span> One team, one line. Always tuck in behind a teammate.</li>
+                        <li><span>⚡</span> Tap your pedal keys together for cadence boosts.</li>
+                        <li><span>🎯</span> Steer to keep your wheel inside the draft window.</li>
+                        <li><span>💤</span> Riders outside the draft lose energy fast.</li>
+                        <li><span>🐢</span> If anyone runs out of energy the whole train slows.</li>
+                    </ul>
+                </div>
+
+                <div class="setup-card">
+                    <div>
+                        <h3>Squad Size</h3>
+                        <p>Supports 2-4 riders (keyboard & touch)</p>
+                    </div>
+                    <div class="count-picker">
+                        <button class="btn-icon" onclick="PelotonGame.adjustPlayerCount(-1)">−</button>
+                        <span id="rider-count-display">4 riders</span>
+                        <button class="btn-icon" onclick="PelotonGame.adjustPlayerCount(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="control-legend">
+                    <h3>Keyboard Cadence Map</h3>
+                    <div class="control-grid legend">
+                        <div class="legend-row"><span class="badge">P1</span> A / S / D</div>
+                        <div class="legend-row"><span class="badge">P2</span> J / K / L</div>
+                        <div class="legend-row"><span class="badge">P3</span> F / G / H</div>
+                        <div class="legend-row"><span class="badge">P4</span> ← / ↓ / →</div>
+                    </div>
+                    <p class="legend-note">Left & right steer, middle key or button pedals.</p>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="PelotonGame.startGame()">
+                    Ride Together
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-game" class="screen">
+            <div class="game-hud">
+                <div class="team-meter">
+                    <div class="meter-label">Team Energy</div>
+                    <div class="meter-bar">
+                        <span id="team-energy-fill"></span>
+                    </div>
+                </div>
+                <div class="hud-readouts">
+                    <span id="pace-readout">Pace: --.- m/s</span>
+                    <span id="harmony-message">Find your line…</span>
+                </div>
+            </div>
+
+            <div class="game-body">
+                <div class="track-wrapper">
+                    <canvas id="track-canvas" width="700" height="700"></canvas>
+                </div>
+                <div class="sidebar">
+                    <div id="player-panels" class="player-panels"></div>
+                    <div class="controls-title">Touch Controls</div>
+                    <div id="control-grid" class="control-grid"></div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="PelotonGame.showWelcome()">Quit</button>
+                <button class="btn btn-primary" onclick="PelotonGame.resetRace()">Restart Lap</button>
+            </div>
+        </div>
+
+        <div id="toast" class="toast" aria-live="polite"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
