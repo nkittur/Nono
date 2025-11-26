@@ -271,19 +271,19 @@ const DIFFICULTY_SETTINGS = {
     easy: {
         name: "Easy",
         strokes: 10,
-        inkLimit: 1800, // pixels of ink
+        inkLimit: 1200, // reduced ink supply
         time: 60
     },
     medium: {
         name: "Medium",
         strokes: 7,
-        inkLimit: 1200,
+        inkLimit: 800,
         time: 45
     },
     hard: {
         name: "Hard",
-        strokes: 4,
-        inkLimit: 700,
+        strokes: 1,
+        inkLimit: 400,
         time: 30
     }
 };
