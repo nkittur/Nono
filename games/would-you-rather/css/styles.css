@@ -315,12 +315,23 @@
     flex-shrink: 0;
 }
 
+.question-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    background: var(--bg-primary);
+    padding: var(--space-md) 0;
+}
+
 .scale-track {
     position: relative;
     height: 80px;
     border-radius: var(--radius-lg);
     overflow: visible;
     margin-bottom: var(--space-sm);
+    cursor: pointer;
+    touch-action: none;
 }
 
 .scale-gradient {
@@ -351,19 +362,28 @@
     transition: left 0.15s ease-out;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     z-index: 1;
+    opacity: 0.4;
+}
+
+.scale-token.pending {
+    opacity: 0.25;
+    filter: grayscale(0.3) drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.scale-token.active {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
 }
 
 .scale-token.locked {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
     animation: tokenBounce 0.3s ease;
 }
 
 @keyframes tokenBounce {
     0%, 100% { transform: translateX(-50%) scale(1); }
     50% { transform: translateX(-50%) scale(1.2); }
-}
-
-.scale-token.hidden {
-    opacity: 0.3;
 }
 
 .scale-labels {
@@ -381,111 +401,53 @@
     color: var(--wyr-option-b);
 }
 
-/* Player Touch Zones - Spaced Out */
-.player-zones {
-    flex: 1;
-    display: grid;
-    gap: var(--space-sm);
-    padding: var(--space-sm);
-    background: var(--bg-primary);
-    min-height: 0;
-}
-
-.player-zone {
-    position: relative;
+/* Sequential Turn Card */
+.turn-card {
+    margin: 0 var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-lg);
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    transition: all 0.2s ease;
-    overflow: hidden;
-    min-height: 60px;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
 }
 
-.player-zone.p1 { background: var(--player-1); }
-.player-zone.p2 { background: var(--player-2); }
-.player-zone.p3 { background: var(--player-3); }
-.player-zone.p4 { background: var(--player-4); }
-.player-zone.p5 { background: var(--player-5); }
-.player-zone.p6 { background: var(--player-6); }
-.player-zone.p7 { background: var(--player-7); }
-.player-zone.p8 { background: var(--player-8); }
-
-.zone-content {
+.turn-info {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    color: white;
-    text-align: center;
-    pointer-events: none;
+    flex: 1;
 }
 
-.zone-animal {
-    font-size: 1.75rem;
+.turn-animal {
+    font-size: 2.75rem;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
 }
 
-.zone-label {
-    font-size: 0.875rem;
+.turn-label {
+    font-size: 1rem;
     font-weight: 700;
-    opacity: 0.9;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
 }
 
-.zone-hint {
-    font-size: 0.7rem;
-    opacity: 0.7;
+.turn-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
-.zone-status {
-    display: none;
-    font-size: 0.75rem;
-    font-weight: 600;
-    opacity: 0.9;
-}
-
-/* Zone States */
-.player-zone.touching {
-    transform: scale(0.98);
-    opacity: 0.9;
-}
-
-.player-zone.locked {
-    opacity: 0.7;
-}
-
-.player-zone.locked .zone-hint {
-    display: none;
-}
-
-.player-zone.locked .zone-status {
-    display: block;
-}
-
-/* Progress indicator showing swipe direction */
-.player-zone::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    background: var(--wyr-option-a);
-    opacity: 0.5;
-    transition: width 0.1s ease;
-}
-
-.player-zone::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    background: var(--wyr-option-b);
-    opacity: 0.5;
-    transition: width 0.1s ease;
+.turn-card .btn {
+    flex-shrink: 0;
 }
 
 /* Voting Footer */
@@ -565,60 +527,6 @@
 }
 
 /* ========================================
-   Grid Layouts for Different Player Counts
-   ======================================== */
-
-/* 2 players */
-.player-zones.players-2 {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-}
-
-/* 3 players */
-.player-zones.players-3 {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-/* 4 players - 2x2 */
-.player-zones.players-4 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-}
-
-/* 5 players */
-.player-zones.players-5 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-.player-zones.players-5 .player-zone:nth-child(5) {
-    grid-column: span 2;
-}
-
-/* 6 players - 2x3 */
-.player-zones.players-6 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-/* 7 players */
-.player-zones.players-7 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
-}
-
-.player-zones.players-7 .player-zone:nth-child(7) {
-    grid-column: span 2;
-}
-
-/* 8 players - 2x4 */
-.player-zones.players-8 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
-}
-
-/* ========================================
    Responsive
    ======================================== */
 
@@ -635,7 +543,7 @@
         font-size: 2rem;
     }
 
-    .zone-animal {
+    .turn-animal {
         font-size: 1.5rem;
     }
 }
