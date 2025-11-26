@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Would You Rather - Fun dilemmas for friends and family!">
+    <meta name="theme-color" content="#ec4899">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Would You Rather - Party Dilemmas!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤔</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🤔</span>
+                    <h1 class="logo-text">Would You Rather</h1>
+                </div>
+                <p class="tagline">Tough choices, fun debates!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">👆</span> Everyone places finger on screen</li>
+                        <li><span class="rule-icon">🅰️</span> Swipe LEFT for option A</li>
+                        <li><span class="rule-icon">🅱️</span> Swipe RIGHT for option B</li>
+                        <li><span class="rule-icon">🎉</span> All answers revealed together!</li>
+                        <li><span class="rule-icon">💬</span> Discuss and debate your choices</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Start Game
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Game Setup</h2>
+
+                <div class="setup-section">
+                    <h3>Number of Players</h3>
+                    <div class="player-count-selector">
+                        <button class="btn btn-icon" onclick="Game.adjustPlayers(-1)">−</button>
+                        <span id="player-count" class="count-display">4</span>
+                        <button class="btn btn-icon" onclick="Game.adjustPlayers(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Number of Questions</h3>
+                    <div class="question-count-selector">
+                        <button class="btn btn-icon" onclick="Game.adjustQuestions(-5)">−</button>
+                        <span id="question-count" class="count-display">10</span>
+                        <button class="btn btn-icon" onclick="Game.adjustQuestions(5)">+</button>
+                    </div>
+                </div>
+
+                <div class="setup-preview" id="setup-preview">
+                    <!-- Shows grid preview -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" onclick="Game.startGame()">Play!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Screen (main voting screen) -->
+        <div id="screen-question" class="screen">
+            <div class="question-header">
+                <div class="question-progress">
+                    <span id="question-number">1</span> / <span id="question-total">10</span>
+                </div>
+            </div>
+
+            <div class="question-options">
+                <div class="option option-a">
+                    <span class="option-label">A</span>
+                    <span class="option-text" id="option-a-text">Be able to fly</span>
+                </div>
+                <div class="option-divider">OR</div>
+                <div class="option option-b">
+                    <span class="option-label">B</span>
+                    <span class="option-text" id="option-b-text">Be able to read minds</span>
+                </div>
+            </div>
+
+            <div class="voting-area" id="voting-area">
+                <!-- Player zones populated by JS -->
+            </div>
+
+            <div class="voting-status" id="voting-status">
+                <span id="votes-count">0</span> / <span id="votes-total">4</span> locked in
+            </div>
+        </div>
+
+        <!-- Reveal Screen -->
+        <div id="screen-reveal" class="screen">
+            <div class="reveal-question">
+                <div class="reveal-options">
+                    <div class="reveal-option option-a">
+                        <span class="option-label">A</span>
+                        <span class="option-text" id="reveal-option-a">Be able to fly</span>
+                        <div class="option-voters" id="voters-a"></div>
+                    </div>
+                    <div class="reveal-divider">VS</div>
+                    <div class="reveal-option option-b">
+                        <span class="option-label">B</span>
+                        <span class="option-text" id="reveal-option-b">Be able to read minds</span>
+                        <div class="option-voters" id="voters-b"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal-tally">
+                <div class="tally-bar">
+                    <div class="tally-a" id="tally-a"></div>
+                    <div class="tally-b" id="tally-b"></div>
+                </div>
+                <div class="tally-counts">
+                    <span id="count-a">2</span>
+                    <span id="count-b">2</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-large" onclick="Game.nextQuestion()" id="next-btn">
+                Next Question
+            </button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="screen-gameover" class="screen">
+            <div class="screen-content center-content">
+                <div class="gameover-icon">🎉</div>
+                <h1 class="gameover-title">Game Complete!</h1>
+                <p class="gameover-subtitle">Great discussions everyone!</p>
+
+                <div class="final-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="stat-questions">10</span>
+                        <span class="stat-label">Questions</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="stat-unanimous">3</span>
+                        <span class="stat-label">Unanimous</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="stat-split">2</span>
+                        <span class="stat-label">50/50 Split</span>
+                    </div>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
+                        Play Again
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../../'">
+                        All Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
