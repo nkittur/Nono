@@ -731,8 +731,8 @@ const Game = {
         const sides = ['top', 'right', 'bottom', 'left'];
 
         sides.forEach(side => {
-            const hasPlayer = this.state.activeSides.includes(side);
-            if (hasPlayer) return;
+            const hasAlivePlayer = this.hasAlivePlayerOnSide(side);
+            if (hasAlivePlayer) return;
 
             if (side === 'top' && ball.y - ball.radius < wall) {
                 ball.y = wall + ball.radius;
@@ -748,6 +748,13 @@ const Game = {
                 ball.vx = -Math.abs(ball.vx);
             }
         });
+    },
+
+    /**
+     * Determine if a given side currently has an active player with lives remaining
+     */
+    hasAlivePlayerOnSide(side) {
+        return this.state.players.some(player => player.side === side && player.lives > 0);
     },
 
     /**
@@ -1094,7 +1101,7 @@ const Game = {
 
         const sides = ['top', 'right', 'bottom', 'left'];
         sides.forEach(side => {
-            if (this.state.activeSides.includes(side)) return;
+            if (this.hasAlivePlayerOnSide(side)) return;
 
             if (side === 'top') {
                 ctx.fillRect(0, 0, size, wall);
