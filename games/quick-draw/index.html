@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Quick Draw - Draw with limited strokes! A fun party drawing game.">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Quick Draw - Limited Stroke Drawing Game!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🎨</span>
+                    <h1 class="logo-text">Quick Draw</h1>
+                </div>
+                <p class="tagline">Draw with Limited Strokes!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">✏️</span> One player draws, others guess</li>
+                        <li><span class="rule-icon">📏</span> Limited strokes AND limited ink!</li>
+                        <li><span class="rule-icon">⏱️</span> Beat the clock to score points</li>
+                        <li><span class="rule-icon">🚫</span> No letters, numbers, or symbols</li>
+                        <li><span class="rule-icon">🏆</span> Work together to reach the goal!</li>
+                    </ul>
+                </div>
+
+                <div class="constraint-preview">
+                    <div class="constraint-item">
+                        <span class="constraint-icon">✏️</span>
+                        <span class="constraint-value">10</span>
+                        <span class="constraint-label">Strokes</span>
+                    </div>
+                    <div class="constraint-item">
+                        <span class="constraint-icon">🖌️</span>
+                        <span class="constraint-value">Limited</span>
+                        <span class="constraint-label">Ink</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Let's Draw!
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Game Setup</h2>
+
+                <div class="setup-section">
+                    <h3>Difficulty</h3>
+                    <p class="setup-hint">Affects strokes, ink, and time</p>
+                    <div class="difficulty-options">
+                        <button class="btn btn-option" data-diff="easy" onclick="Game.setDifficulty('easy')">
+                            <span class="diff-strokes">15 strokes</span>
+                            <span class="diff-name">Easy</span>
+                        </button>
+                        <button class="btn btn-option active" data-diff="medium" onclick="Game.setDifficulty('medium')">
+                            <span class="diff-strokes">10 strokes</span>
+                            <span class="diff-name">Medium</span>
+                        </button>
+                        <button class="btn btn-option" data-diff="hard" onclick="Game.setDifficulty('hard')">
+                            <span class="diff-strokes">6 strokes</span>
+                            <span class="diff-name">Hard</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Categories</h3>
+                    <p class="setup-hint">Select at least one</p>
+                    <div class="category-grid" id="category-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Target Score</h3>
+                    <div class="score-selector">
+                        <button class="btn btn-icon" onclick="Game.adjustTarget(-5)">−</button>
+                        <span id="target-score" class="count-display">15</span>
+                        <button class="btn btn-icon" onclick="Game.adjustTarget(5)">+</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" onclick="Game.startGame()">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pass Device Screen -->
+        <div id="screen-pass" class="screen">
+            <div class="screen-content center-content">
+                <div class="pass-icon">🎨</div>
+                <h2 class="pass-title">Pass to the Artist</h2>
+                <p class="pass-hint">Only the artist should see the next screen!</p>
+
+                <div class="game-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="pass-score">0</span>
+                        <span class="stat-label">Score</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="pass-target">15</span>
+                        <span class="stat-label">Goal</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-large pulse" onclick="Game.showWord()">
+                    Show My Word
+                </button>
+            </div>
+        </div>
+
+        <!-- Word Reveal Screen -->
+        <div id="screen-word" class="screen">
+            <div class="screen-content center-content">
+                <div class="word-reveal-card">
+                    <div class="word-label">Draw this:</div>
+                    <div class="word-text" id="word-text">Pizza</div>
+                </div>
+
+                <div class="limits-preview">
+                    <div class="limit-item">
+                        <span class="limit-icon">✏️</span>
+                        <span class="limit-value" id="preview-strokes">10</span>
+                        <span class="limit-label">strokes</span>
+                    </div>
+                    <div class="limit-item">
+                        <span class="limit-icon">⏱️</span>
+                        <span class="limit-value" id="preview-time">45</span>
+                        <span class="limit-label">seconds</span>
+                    </div>
+                </div>
+
+                <p class="word-reminder">Remember: No letters, numbers, or symbols!</p>
+
+                <button class="btn btn-primary btn-large" onclick="Game.startDrawing()">
+                    Start Drawing!
+                </button>
+            </div>
+        </div>
+
+        <!-- Drawing Screen -->
+        <div id="screen-draw" class="screen">
+            <div class="draw-header">
+                <div class="draw-stats">
+                    <div class="draw-stat">
+                        <span class="draw-stat-label">Strokes</span>
+                        <span class="draw-stat-value" id="stroke-count">0/10</span>
+                    </div>
+                    <div class="draw-stat">
+                        <span class="draw-stat-label">Ink</span>
+                        <div class="ink-bar">
+                            <div class="ink-fill" id="ink-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timer-display" id="draw-timer">45</div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="draw-canvas"></canvas>
+                <div class="canvas-message" id="canvas-message"></div>
+            </div>
+
+            <div class="draw-actions">
+                <button class="btn btn-undo" onclick="Game.undoStroke()" id="undo-btn">
+                    ↩ Undo
+                </button>
+                <button class="btn btn-clear" onclick="Game.clearCanvas()">
+                    🗑️ Clear
+                </button>
+                <button class="btn btn-done" onclick="Game.finishDrawing()">
+                    Done! ✓
+                </button>
+            </div>
+        </div>
+
+        <!-- Guessing Screen -->
+        <div id="screen-guess" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">What is it?</h2>
+                <p class="guess-hint">Everyone look and guess!</p>
+
+                <div class="canvas-display">
+                    <canvas id="display-canvas"></canvas>
+                </div>
+
+                <div class="guess-timer">
+                    <span id="guess-timer">30</span>s remaining
+                </div>
+
+                <div class="guess-actions">
+                    <button class="btn btn-wrong" onclick="Game.markWrong()">
+                        ✗ Time's Up
+                    </button>
+                    <button class="btn btn-correct" onclick="Game.markCorrect()">
+                        ✓ Got It!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer Screen -->
+        <div id="screen-answer" class="screen">
+            <div class="screen-content center-content">
+                <div class="answer-icon" id="answer-icon">🎉</div>
+                <h2 class="answer-title" id="answer-title">Correct!</h2>
+
+                <div class="answer-word-card">
+                    <span class="answer-label">The word was:</span>
+                    <span class="answer-word" id="answer-word">Pizza</span>
+                </div>
+
+                <div class="round-progress">
+                    <span class="progress-text" id="progress-text">5 / 15</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.nextRound()" id="next-btn">
+                    Next Round
+                </button>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="screen-victory" class="screen">
+            <div class="screen-content center-content">
+                <div class="victory-celebration">
+                    <span class="victory-emoji">🎨</span>
+                    <span class="victory-emoji">🏆</span>
+                    <span class="victory-emoji">🎨</span>
+                </div>
+                <h1 class="victory-title">Amazing Artists!</h1>
+                <p class="victory-subtitle">You reached the goal!</p>
+
+                <div class="victory-stats">
+                    <div class="victory-stat">
+                        <span class="stat-value" id="victory-score">15</span>
+                        <span class="stat-label">Final Score</span>
+                    </div>
+                    <div class="victory-stat">
+                        <span class="stat-value" id="victory-rounds">8</span>
+                        <span class="stat-label">Rounds</span>
+                    </div>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
+                        Play Again
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../../'">
+                        All Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/prompts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
