@@ -79,12 +79,12 @@
                     </div>
                 </div>
                 <div class="setup-section">
-                    <h3>Impostor Final Guess</h3>
-                    <p class="setup-hint">Let the impostor try to name the real word for bonus points</p>
+                    <h3>Scoring & Impostor Guess</h3>
+                    <p class="setup-hint">Track points and let the impostor attempt the real word for bonuses</p>
                     <label class="setting-toggle">
-                        <input type="checkbox" id="impostor-guess-toggle" checked>
+                        <input type="checkbox" id="scoring-toggle" checked>
                         <span class="toggle-indicator" aria-hidden="true"></span>
-                        <span class="toggle-label">Allow final guess (+2 points if correct)</span>
+                        <span class="toggle-label">Enable scoring (includes impostor guess)</span>
                     </label>
                 </div>
 
@@ -274,7 +274,7 @@
                         <span class="stat-label">Players</span>
                     </div>
                 </div>
-                <div class="final-scoreboard-card">
+                <div class="final-scoreboard-card" id="final-scoreboard-card">
                     <h3>Final Scores</h3>
                     <div class="scoreboard compact" id="final-scoreboard">
                         <!-- Filled by JS -->
