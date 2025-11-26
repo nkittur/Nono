@@ -118,14 +118,12 @@ const Game = {
             }
         });
 
-        // Canvas tap to launch
-        if (this.canvas) {
-            this.canvas.addEventListener('click', () => this.launchBall());
-            this.canvas.addEventListener('touchstart', (e) => {
-                if (!this.state.isLaunched) {
-                    e.preventDefault();
-                    this.launchBall();
-                }
+        // Launch overlay tap to launch
+        if (this.elements.launchOverlay) {
+            this.elements.launchOverlay.addEventListener('click', () => this.launchBall());
+            this.elements.launchOverlay.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.launchBall();
             });
         }
     },
@@ -470,11 +468,6 @@ const Game = {
     handleTouchStart(e, playerIndex) {
         e.preventDefault();
 
-        // Launch ball if not launched and this is the launch player
-        if (!this.state.isLaunched && this.state.launchPlayer.index === playerIndex) {
-            this.launchBall();
-        }
-
         const player = this.state.players[playerIndex];
 
         for (let i = 0; i < e.changedTouches.length; i++) {
@@ -541,6 +534,11 @@ const Game = {
 
         for (let i = 0; i < e.changedTouches.length; i++) {
             if (e.changedTouches[i].identifier === player.touchId) {
+                // Launch ball when launch player lifts finger
+                if (!this.state.isLaunched && this.state.launchPlayer && this.state.launchPlayer.index === playerIndex) {
+                    this.launchBall();
+                }
+
                 player.touchId = null;
                 player.lastTouch = null;
                 break;
