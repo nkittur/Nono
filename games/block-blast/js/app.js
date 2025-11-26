@@ -380,11 +380,21 @@ const Game = {
      */
     handleTouchStart(e, playerIndex) {
         e.preventDefault();
-        const touch = e.touches[0];
-        this.state.players[playerIndex].lastTouch = {
-            x: touch.clientX,
-            y: touch.clientY
-        };
+        const player = this.state.players[playerIndex];
+
+        // Get the new touch(es) from changedTouches
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            // Only track if this player doesn't already have a touch
+            if (!player.touchId) {
+                player.touchId = touch.identifier;
+                player.lastTouch = {
+                    x: touch.clientX,
+                    y: touch.clientY
+                };
+                break;
+            }
+        }
     },
 
     /**
@@ -393,9 +403,19 @@ const Game = {
     handleTouchMove(e, playerIndex) {
         e.preventDefault();
         const player = this.state.players[playerIndex];
-        if (!player.lastTouch) return;
+        if (player.touchId === undefined || player.touchId === null) return;
 
-        const touch = e.touches[0];
+        // Find the specific touch by identifier
+        let touch = null;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === player.touchId) {
+                touch = e.changedTouches[i];
+                break;
+            }
+        }
+
+        if (!touch || !player.lastTouch) return;
+
         const deltaX = touch.clientX - player.lastTouch.x;
         const deltaY = touch.clientY - player.lastTouch.y;
 
@@ -418,7 +438,16 @@ const Game = {
      * Handle touch end
      */
     handleTouchEnd(e, playerIndex) {
-        this.state.players[playerIndex].lastTouch = null;
+        const player = this.state.players[playerIndex];
+
+        // Check if our tracked touch ended
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === player.touchId) {
+                player.touchId = null;
+                player.lastTouch = null;
+                break;
+            }
+        }
     },
 
     /**
