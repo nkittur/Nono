@@ -225,6 +225,12 @@
     font-size: 0.875rem;
 }
 
+.hub-footer .version {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    margin-top: var(--space-xs);
+}
+
 /* ========================================
    Responsive - Larger Screens
    ======================================== */
