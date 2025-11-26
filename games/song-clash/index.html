@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Song Clash - Guess the song from emoji clues! A fun party game for music lovers.">
+    <meta name="description" content="Emoji Clash - Guess from emoji clues! A fun party game for all ages.">
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Song Clash - Emoji Music Guessing Game</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>">
+    <title>Emoji Clash - Guess the Emoji Clues!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     <link rel="stylesheet" href="../../css/shared.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -25,26 +25,26 @@
         <div id="screen-welcome" class="screen active">
             <div class="screen-content">
                 <div class="logo">
-                    <span class="logo-icon">🎤</span>
-                    <h1 class="logo-text">Song Clash</h1>
+                    <span class="logo-icon">🎯</span>
+                    <h1 class="logo-text">Emoji Clash</h1>
                 </div>
-                <p class="tagline">Guess the Song from Emoji Clues!</p>
+                <p class="tagline">Guess from Emoji Clues!</p>
 
                 <div class="rules-card">
                     <h2>How to Play</h2>
                     <ul class="rules-list">
-                        <li><span class="rule-icon">🎵</span> One player is the DJ (shows clues)</li>
-                        <li><span class="rule-icon">🔮</span> Others guess the song from emojis</li>
+                        <li><span class="rule-icon">🎭</span> One player is the Clue Master</li>
+                        <li><span class="rule-icon">🔮</span> Others guess from emoji clues</li>
                         <li><span class="rule-icon">⏱️</span> Race against the clock!</li>
                         <li><span class="rule-icon">✅</span> Score points for correct guesses</li>
-                        <li><span class="rule-icon">🏆</span> Complete the playlist to win!</li>
+                        <li><span class="rule-icon">🏆</span> Reach the goal to win!</li>
                     </ul>
                 </div>
 
                 <div class="example-card">
                     <p class="example-label">Example</p>
-                    <div class="example-emojis">☔👩‍🎤💜</div>
-                    <p class="example-answer">= "Purple Rain"</p>
+                    <div class="example-emojis">🦁👑🌅</div>
+                    <p class="example-answer">= "The Lion King"</p>
                 </div>
 
                 <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
@@ -56,36 +56,55 @@
         <!-- Setup Screen -->
         <div id="screen-setup" class="screen">
             <div class="screen-content">
-                <h2 class="screen-title">DJ Setup</h2>
+                <h2 class="screen-title">Game Setup</h2>
 
                 <div class="setup-section">
-                    <h3>Choose Decades</h3>
-                    <p class="setup-hint">Select one or more eras</p>
-                    <div id="decade-selection" class="decade-grid">
-                        <!-- Populated by JS -->
+                    <h3>Choose Packs</h3>
+                    <p class="setup-hint">Select one or more categories</p>
+
+                    <!-- Songs Category -->
+                    <div class="pack-category">
+                        <h4 class="category-title">🎵 Songs</h4>
+                        <div class="pack-grid" id="packs-songs">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Phrases Category -->
+                    <div class="pack-category">
+                        <h4 class="category-title">💬 Phrases</h4>
+                        <div class="pack-grid" id="packs-phrases">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- People Category -->
+                    <div class="pack-category">
+                        <h4 class="category-title">⭐ People</h4>
+                        <div class="pack-grid" id="packs-people">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Entertainment Category -->
+                    <div class="pack-category">
+                        <h4 class="category-title">🎬 Entertainment</h4>
+                        <div class="pack-grid" id="packs-entertainment">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Things Category -->
+                    <div class="pack-category">
+                        <h4 class="category-title">🎯 Things</h4>
+                        <div class="pack-grid" id="packs-things">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
                 </div>
 
                 <div class="setup-section">
-                    <h3>Difficulty</h3>
-                    <div class="difficulty-options">
-                        <button class="btn btn-option" data-difficulty="easy" onclick="Game.setDifficulty('easy')">
-                            <span class="diff-icon">😊</span>
-                            <span class="diff-label">Easy</span>
-                        </button>
-                        <button class="btn btn-option active" data-difficulty="mixed" onclick="Game.setDifficulty('mixed')">
-                            <span class="diff-icon">🎯</span>
-                            <span class="diff-label">Mixed</span>
-                        </button>
-                        <button class="btn btn-option" data-difficulty="hard" onclick="Game.setDifficulty('hard')">
-                            <span class="diff-icon">🔥</span>
-                            <span class="diff-label">Hard</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="setup-section">
-                    <h3>Songs to Complete</h3>
+                    <h3>Target Score</h3>
                     <div class="score-selector">
                         <button class="btn btn-icon" onclick="Game.adjustTarget(-5)">−</button>
                         <span id="target-score" class="score-display">15</span>
@@ -94,17 +113,18 @@
                 </div>
 
                 <div class="setup-section">
-                    <h3>Timer per Song</h3>
+                    <h3>Timer per Round</h3>
                     <div class="timer-options">
                         <button class="btn btn-option" data-time="20" onclick="Game.setTimer(20)">20s</button>
                         <button class="btn btn-option active" data-time="30" onclick="Game.setTimer(30)">30s</button>
                         <button class="btn btn-option" data-time="45" onclick="Game.setTimer(45)">45s</button>
+                        <button class="btn btn-option" data-time="60" onclick="Game.setTimer(60)">60s</button>
                     </div>
                 </div>
 
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
-                    <button class="btn btn-primary" onclick="Game.startGame()">Start DJ'ing</button>
+                    <button class="btn btn-primary" onclick="Game.startGame()">Let's Play!</button>
                 </div>
             </div>
         </div>
@@ -112,14 +132,14 @@
         <!-- Ready Screen (Pass Device) -->
         <div id="screen-ready" class="screen">
             <div class="screen-content center-content">
-                <div class="pass-device-icon">🎧</div>
-                <h2>Pass to the DJ</h2>
-                <p class="ready-hint">The DJ will show emoji clues.<br>Everyone else guesses the song!</p>
+                <div class="pass-device-icon">🎭</div>
+                <h2>Pass to the Clue Master</h2>
+                <p class="ready-hint">Show emoji clues to the group.<br>Everyone else guesses!</p>
 
                 <div class="game-stats">
                     <div class="stat">
                         <span class="stat-value" id="ready-score">0</span>
-                        <span class="stat-label">Songs</span>
+                        <span class="stat-label">Score</span>
                     </div>
                     <div class="stat">
                         <span class="stat-value" id="ready-target">15</span>
@@ -154,21 +174,21 @@
 
             <div class="clue-container">
                 <div class="clue-card">
-                    <div class="clue-label">What song is this?</div>
+                    <div class="clue-category" id="clue-category">Song</div>
                     <div class="clue-emojis" id="clue-emojis">🎵🎶🎤</div>
                     <div class="clue-hint" id="clue-hint"></div>
                 </div>
             </div>
 
             <div class="clue-actions">
-                <button class="btn btn-skip" onclick="Game.skipSong()">
+                <button class="btn btn-skip" onclick="Game.skipItem()">
                     Skip
                 </button>
                 <button class="btn btn-reveal" onclick="Game.revealAnswer()">
                     Reveal
                 </button>
                 <button class="btn btn-correct" onclick="Game.gotIt()">
-                    They Got It! ✓
+                    Got It! ✓
                 </button>
             </div>
         </div>
@@ -179,8 +199,8 @@
                 <div class="answer-card">
                     <div class="answer-emojis" id="answer-emojis">🎵🎶🎤</div>
                     <div class="answer-divider"></div>
-                    <h2 class="answer-title" id="answer-title">Song Title</h2>
-                    <p class="answer-artist" id="answer-artist">Artist Name</p>
+                    <h2 class="answer-title" id="answer-title">Answer</h2>
+                    <p class="answer-hint" id="answer-hint">Hint text</p>
                 </div>
 
                 <p class="answer-prompt">Did they guess it?</p>
@@ -199,17 +219,17 @@
         <!-- Round Summary Screen -->
         <div id="screen-summary" class="screen">
             <div class="screen-content center-content">
-                <div class="summary-icon" id="summary-icon">🎵</div>
+                <div class="summary-icon" id="summary-icon">🎯</div>
                 <h2 id="summary-title">Nice Round!</h2>
 
                 <div class="summary-stats">
                     <div class="summary-stat highlight">
                         <span class="stat-value" id="summary-round-points">+3</span>
-                        <span class="stat-label">Songs This Round</span>
+                        <span class="stat-label">This Round</span>
                     </div>
                     <div class="summary-stat">
                         <span class="stat-value" id="summary-total">8</span>
-                        <span class="stat-label">Total Songs</span>
+                        <span class="stat-label">Total Score</span>
                     </div>
                     <div class="summary-progress">
                         <div class="progress-bar">
@@ -220,7 +240,7 @@
                 </div>
 
                 <button class="btn btn-primary btn-large" onclick="Game.nextRound()">
-                    Next DJ
+                    Next Round
                 </button>
             </div>
         </div>
@@ -229,17 +249,17 @@
         <div id="screen-victory" class="screen">
             <div class="screen-content center-content">
                 <div class="victory-celebration">
-                    <span class="victory-emoji">🎵</span>
+                    <span class="victory-emoji">🎉</span>
                     <span class="victory-emoji">🏆</span>
-                    <span class="victory-emoji">🎵</span>
+                    <span class="victory-emoji">🎉</span>
                 </div>
-                <h1 class="victory-title">Playlist Complete!</h1>
-                <p class="victory-subtitle">You nailed it!</p>
+                <h1 class="victory-title">You Did It!</h1>
+                <p class="victory-subtitle">Amazing teamwork!</p>
 
                 <div class="victory-stats">
                     <div class="victory-stat">
                         <span class="stat-value" id="victory-score">15</span>
-                        <span class="stat-label">Songs Guessed</span>
+                        <span class="stat-label">Final Score</span>
                     </div>
                     <div class="victory-stat">
                         <span class="stat-value" id="victory-rounds">5</span>
@@ -259,7 +279,7 @@
         </div>
     </div>
 
-    <script src="js/songs.js"></script>
+    <script src="js/packs.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

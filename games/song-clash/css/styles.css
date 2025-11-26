@@ -1,5 +1,5 @@
 /* ========================================
-   Song Clash - Emoji Music Guessing Game
+   Emoji Clash - Guess from Emoji Clues!
    Game-specific styles (shared.css provides base)
    ======================================== */
 
@@ -18,6 +18,7 @@
     padding-top: calc(var(--space-lg) + var(--safe-area-top) + 50px);
     padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
     animation: fadeIn var(--transition-normal);
+    overflow-y: auto;
 }
 
 .screen.active {
@@ -160,66 +161,73 @@
     margin-bottom: var(--space-md);
 }
 
-/* Decade Selection Grid */
-.decade-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+/* Pack Categories */
+.pack-category {
+    margin-bottom: var(--space-lg);
+}
+
+.category-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+/* Pack Selection Grid */
+.pack-grid {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-sm);
 }
 
-.decade-option {
+.pack-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
     background: var(--bg-card);
     border: 2px solid transparent;
     border-radius: var(--radius-md);
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
     cursor: pointer;
     transition: all var(--transition-fast);
-    text-align: center;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-.decade-option:hover {
+.pack-option:hover {
     background: var(--bg-card-light);
 }
 
-.decade-option.selected {
+.pack-option.selected {
     border-color: #ec4899;
-    background: rgba(236, 72, 153, 0.1);
+    background: rgba(236, 72, 153, 0.15);
 }
 
-.decade-option .decade-emoji {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-xs);
+.pack-emoji {
+    font-size: 1.25rem;
 }
 
-.decade-option .decade-name {
+.pack-name {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
 }
 
-/* Difficulty Options */
-.difficulty-options {
-    display: flex;
-    gap: var(--space-sm);
+.pack-count {
+    font-size: 0.7rem;
+    background: var(--bg-card-light);
+    color: var(--text-muted);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    margin-left: var(--space-xs);
 }
 
-.difficulty-options .btn-option {
-    flex: 1;
-    flex-direction: column;
-    padding: var(--space-md);
-    gap: var(--space-xs);
+.pack-option.selected .pack-count {
+    background: rgba(236, 72, 153, 0.3);
+    color: #f472b6;
 }
 
-.diff-icon {
-    font-size: 1.5rem;
-}
-
-.diff-label {
-    font-size: 0.875rem;
-}
-
+/* Button Options */
 .btn-option {
     flex: 1;
     background: var(--bg-card);
@@ -260,6 +268,7 @@
     display: flex;
     gap: var(--space-md);
     margin-top: auto;
+    padding-top: var(--space-lg);
 }
 
 .button-group.vertical {
@@ -435,11 +444,15 @@
     }
 }
 
-.clue-label {
-    font-size: 0.875rem;
+.clue-category {
+    display: inline-block;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--text-muted);
+    color: white;
+    background: #ec4899;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
     margin-bottom: var(--space-lg);
 }
 
@@ -528,8 +541,8 @@
     margin-bottom: var(--space-xs);
 }
 
-.answer-artist {
-    font-size: 1.125rem;
+.answer-hint {
+    font-size: 1rem;
     color: #ec4899;
     margin: 0;
 }
@@ -688,8 +701,12 @@
         font-size: 3rem;
     }
 
-    .decade-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .pack-option {
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .pack-name {
+        font-size: 0.8rem;
     }
 }
 

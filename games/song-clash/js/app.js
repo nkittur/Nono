@@ -1,5 +1,5 @@
 /**
- * Song Clash - Emoji Music Guessing Game
+ * Emoji Clash - Guess from Emoji Clues!
  * Main Game Logic
  */
 
@@ -7,16 +7,16 @@ const Game = {
     // Game State
     state: {
         currentScreen: 'welcome',
-        selectedDecades: [],
-        difficulty: 'mixed',
+        selectedPacks: [],
         targetScore: 15,
         timerDuration: 30,
         score: 0,
         roundNumber: 0,
         roundScore: 0,
-        currentSongs: [],
-        currentSongIndex: 0,
-        currentSong: null,
+        currentItems: [],
+        currentItemIndex: 0,
+        currentItem: null,
+        currentPack: null,
         timerInterval: null,
         timeRemaining: 0,
         isTimerRunning: false
@@ -25,12 +25,21 @@ const Game = {
     // DOM Elements
     elements: {},
 
+    // Category mapping for display
+    categoryLabels: {
+        'songs': 'Song',
+        'phrases': 'Saying',
+        'people': 'Person',
+        'entertainment': 'Title',
+        'things': 'Thing'
+    },
+
     /**
      * Initialize the game
      */
     init() {
         this.cacheElements();
-        this.renderDecadeSelection();
+        this.renderPackSelection();
         this.loadSettings();
         this.showScreen('welcome');
     },
@@ -50,9 +59,14 @@ const Game = {
                 victory: document.getElementById('screen-victory')
             },
             // Setup
-            decadeSelection: document.getElementById('decade-selection'),
+            packGrids: {
+                songs: document.getElementById('packs-songs'),
+                phrases: document.getElementById('packs-phrases'),
+                people: document.getElementById('packs-people'),
+                entertainment: document.getElementById('packs-entertainment'),
+                things: document.getElementById('packs-things')
+            },
             targetScore: document.getElementById('target-score'),
-            difficultyOptions: document.querySelectorAll('.difficulty-options .btn-option'),
             timerOptions: document.querySelectorAll('.timer-options .btn-option'),
             // Ready
             readyScore: document.getElementById('ready-score'),
@@ -63,12 +77,13 @@ const Game = {
             timerProgress: document.getElementById('timer-progress'),
             roundScore: document.getElementById('round-score'),
             roundTarget: document.getElementById('round-target'),
+            clueCategory: document.getElementById('clue-category'),
             clueEmojis: document.getElementById('clue-emojis'),
             clueHint: document.getElementById('clue-hint'),
             // Answer
             answerEmojis: document.getElementById('answer-emojis'),
             answerTitle: document.getElementById('answer-title'),
-            answerArtist: document.getElementById('answer-artist'),
+            answerHint: document.getElementById('answer-hint'),
             // Summary
             summaryIcon: document.getElementById('summary-icon'),
             summaryTitle: document.getElementById('summary-title'),
@@ -87,7 +102,7 @@ const Game = {
      */
     loadSettings() {
         try {
-            const saved = localStorage.getItem('song-clash-settings');
+            const saved = localStorage.getItem('emoji-clash-settings');
             if (saved) {
                 const settings = JSON.parse(saved);
                 if (settings.targetScore) {
@@ -98,13 +113,9 @@ const Game = {
                     this.state.timerDuration = settings.timerDuration;
                     this.updateTimerOptionUI();
                 }
-                if (settings.difficulty) {
-                    this.state.difficulty = settings.difficulty;
-                    this.updateDifficultyUI();
-                }
-                if (settings.selectedDecades && settings.selectedDecades.length > 0) {
-                    this.state.selectedDecades = settings.selectedDecades;
-                    this.updateDecadeSelectionUI();
+                if (settings.selectedPacks && settings.selectedPacks.length > 0) {
+                    this.state.selectedPacks = settings.selectedPacks;
+                    this.updatePackSelectionUI();
                 }
             }
         } catch (e) {
@@ -117,11 +128,10 @@ const Game = {
      */
     saveSettings() {
         try {
-            localStorage.setItem('song-clash-settings', JSON.stringify({
+            localStorage.setItem('emoji-clash-settings', JSON.stringify({
                 targetScore: this.state.targetScore,
                 timerDuration: this.state.timerDuration,
-                difficulty: this.state.difficulty,
-                selectedDecades: this.state.selectedDecades
+                selectedPacks: this.state.selectedPacks
             }));
         } catch (e) {
             console.log('Could not save settings');
@@ -156,71 +166,55 @@ const Game = {
     },
 
     /**
-     * Render decade selection
+     * Render pack selection
      */
-    renderDecadeSelection() {
-        const container = this.elements.decadeSelection;
-        container.innerHTML = '';
-
-        Object.entries(SONGS.decades).forEach(([id, decade]) => {
-            const option = document.createElement('div');
-            option.className = 'decade-option';
-            option.dataset.decadeId = id;
-            option.innerHTML = `
-                <span class="decade-emoji">${decade.emoji}</span>
-                <span class="decade-name">${decade.name}</span>
-            `;
-            option.addEventListener('click', () => this.toggleDecade(id));
-            container.appendChild(option);
+    renderPackSelection() {
+        // Clear all grids
+        Object.values(this.elements.packGrids).forEach(grid => {
+            grid.innerHTML = '';
         });
-    },
 
-    /**
-     * Toggle decade selection
-     */
-    toggleDecade(decadeId) {
-        const index = this.state.selectedDecades.indexOf(decadeId);
-        if (index > -1) {
-            this.state.selectedDecades.splice(index, 1);
-        } else {
-            this.state.selectedDecades.push(decadeId);
-        }
-        this.updateDecadeSelectionUI();
-    },
-
-    /**
-     * Update decade selection UI
-     */
-    updateDecadeSelectionUI() {
-        const options = this.elements.decadeSelection.querySelectorAll('.decade-option');
-        options.forEach(option => {
-            const decadeId = option.dataset.decadeId;
-            if (this.state.selectedDecades.includes(decadeId)) {
-                option.classList.add('selected');
-            } else {
-                option.classList.remove('selected');
+        // Populate packs by category
+        Object.entries(PACKS).forEach(([id, pack]) => {
+            const grid = this.elements.packGrids[pack.category];
+            if (grid) {
+                const option = document.createElement('div');
+                option.className = 'pack-option';
+                option.dataset.packId = id;
+                option.innerHTML = `
+                    <span class="pack-emoji">${pack.emoji}</span>
+                    <span class="pack-name">${pack.name}</span>
+                    <span class="pack-count">${pack.items.length}</span>
+                `;
+                option.addEventListener('click', () => this.togglePack(id));
+                grid.appendChild(option);
             }
         });
     },
 
     /**
-     * Set difficulty
+     * Toggle pack selection
      */
-    setDifficulty(difficulty) {
-        this.state.difficulty = difficulty;
-        this.updateDifficultyUI();
+    togglePack(packId) {
+        const index = this.state.selectedPacks.indexOf(packId);
+        if (index > -1) {
+            this.state.selectedPacks.splice(index, 1);
+        } else {
+            this.state.selectedPacks.push(packId);
+        }
+        this.updatePackSelectionUI();
     },
 
     /**
-     * Update difficulty UI
+     * Update pack selection UI
      */
-    updateDifficultyUI() {
-        this.elements.difficultyOptions.forEach(btn => {
-            const diff = btn.dataset.difficulty;
-            if (diff === this.state.difficulty) {
-                btn.classList.add('active');
+    updatePackSelectionUI() {
+        document.querySelectorAll('.pack-option').forEach(option => {
+            const packId = option.dataset.packId;
+            if (this.state.selectedPacks.includes(packId)) {
+                option.classList.add('selected');
             } else {
-                btn.classList.remove('active');
+                option.classList.remove('selected');
             }
         });
     },
@@ -262,10 +256,10 @@ const Game = {
      * Start the game
      */
     startGame() {
-        // Default to all decades if none selected
-        if (this.state.selectedDecades.length === 0) {
-            this.state.selectedDecades = Object.keys(SONGS.decades);
-            this.updateDecadeSelectionUI();
+        // Default to all packs if none selected
+        if (this.state.selectedPacks.length === 0) {
+            this.state.selectedPacks = Object.keys(PACKS);
+            this.updatePackSelectionUI();
         }
 
         this.saveSettings();
@@ -274,8 +268,8 @@ const Game = {
         this.state.score = 0;
         this.state.roundNumber = 0;
 
-        // Prepare songs
-        this.prepareSongs();
+        // Prepare items
+        this.prepareItems();
 
         // Show ready screen
         this.prepareReadyScreen();
@@ -283,28 +277,27 @@ const Game = {
     },
 
     /**
-     * Prepare songs from selected decades
+     * Prepare items from selected packs
      */
-    prepareSongs() {
-        this.state.currentSongs = [];
+    prepareItems() {
+        this.state.currentItems = [];
 
-        this.state.selectedDecades.forEach(decadeId => {
-            const decade = SONGS.decades[decadeId];
-            if (decade) {
-                let songs = [...decade.songs];
-
-                // Filter by difficulty if not mixed
-                if (this.state.difficulty !== 'mixed') {
-                    songs = songs.filter(s => s.difficulty === this.state.difficulty);
-                }
-
-                this.state.currentSongs.push(...songs);
+        this.state.selectedPacks.forEach(packId => {
+            const pack = PACKS[packId];
+            if (pack) {
+                pack.items.forEach(item => {
+                    this.state.currentItems.push({
+                        ...item,
+                        packId: packId,
+                        category: pack.category
+                    });
+                });
             }
         });
 
-        // Shuffle songs
-        this.shuffleArray(this.state.currentSongs);
-        this.state.currentSongIndex = 0;
+        // Shuffle items
+        this.shuffleArray(this.state.currentItems);
+        this.state.currentItemIndex = 0;
     },
 
     /**
@@ -339,8 +332,8 @@ const Game = {
         this.elements.roundScore.textContent = this.state.score;
         this.elements.roundTarget.textContent = this.state.targetScore;
 
-        // Show first song
-        this.showNextSong();
+        // Show first item
+        this.showNextItem();
 
         // Show clue screen
         this.showScreen('clue');
@@ -350,20 +343,22 @@ const Game = {
     },
 
     /**
-     * Show next song
+     * Show next item
      */
-    showNextSong() {
+    showNextItem() {
         // Check if we need to reshuffle
-        if (this.state.currentSongIndex >= this.state.currentSongs.length) {
-            this.shuffleArray(this.state.currentSongs);
-            this.state.currentSongIndex = 0;
+        if (this.state.currentItemIndex >= this.state.currentItems.length) {
+            this.shuffleArray(this.state.currentItems);
+            this.state.currentItemIndex = 0;
         }
 
-        this.state.currentSong = this.state.currentSongs[this.state.currentSongIndex];
-        this.state.currentSongIndex++;
+        this.state.currentItem = this.state.currentItems[this.state.currentItemIndex];
+        this.state.currentItemIndex++;
 
         // Update UI
-        this.elements.clueEmojis.textContent = this.state.currentSong.emojis;
+        const categoryLabel = this.categoryLabels[this.state.currentItem.category] || 'Guess';
+        this.elements.clueCategory.textContent = categoryLabel;
+        this.elements.clueEmojis.textContent = this.state.currentItem.emojis;
         this.elements.clueHint.textContent = '';
 
         // Animate card
@@ -390,16 +385,16 @@ const Game = {
             return;
         }
 
-        // Show next song
-        this.showNextSong();
+        // Show next item
+        this.showNextItem();
     },
 
     /**
-     * Skip song
+     * Skip item
      */
-    skipSong() {
+    skipItem() {
         if (!this.state.isTimerRunning) return;
-        this.showNextSong();
+        this.showNextItem();
     },
 
     /**
@@ -409,9 +404,9 @@ const Game = {
         this.stopTimer();
 
         // Update answer screen
-        this.elements.answerEmojis.textContent = this.state.currentSong.emojis;
-        this.elements.answerTitle.textContent = this.state.currentSong.title;
-        this.elements.answerArtist.textContent = this.state.currentSong.artist;
+        this.elements.answerEmojis.textContent = this.state.currentItem.emojis;
+        this.elements.answerTitle.textContent = this.state.currentItem.answer;
+        this.elements.answerHint.textContent = this.state.currentItem.hint || '';
 
         this.showScreen('answer');
     },
@@ -431,7 +426,7 @@ const Game = {
 
         // Continue round with new timer
         this.state.timeRemaining = this.state.timerDuration;
-        this.showNextSong();
+        this.showNextItem();
         this.showScreen('clue');
         this.startTimer();
     },
@@ -442,7 +437,7 @@ const Game = {
     markWrong() {
         // Continue round with new timer
         this.state.timeRemaining = this.state.timerDuration;
-        this.showNextSong();
+        this.showNextItem();
         this.showScreen('clue');
         this.startTimer();
     },
@@ -520,12 +515,12 @@ const Game = {
         // Set icon and title based on performance
         if (roundScore === 0) {
             this.elements.summaryIcon.textContent = '😅';
-            this.elements.summaryTitle.textContent = 'Tough Crowd!';
+            this.elements.summaryTitle.textContent = 'Tough Round!';
         } else if (roundScore <= 2) {
-            this.elements.summaryIcon.textContent = '🎵';
+            this.elements.summaryIcon.textContent = '👍';
             this.elements.summaryTitle.textContent = 'Nice!';
         } else if (roundScore <= 4) {
-            this.elements.summaryIcon.textContent = '🎤';
+            this.elements.summaryIcon.textContent = '🎯';
             this.elements.summaryTitle.textContent = 'Great Round!';
         } else {
             this.elements.summaryIcon.textContent = '🔥';
@@ -566,7 +561,7 @@ const Game = {
     playAgain() {
         this.state.score = 0;
         this.state.roundNumber = 0;
-        this.prepareSongs();
+        this.prepareItems();
         this.prepareReadyScreen();
         this.showScreen('ready');
     },
@@ -579,7 +574,7 @@ const Game = {
         this.state.score = 0;
         this.state.roundNumber = 0;
         this.state.roundScore = 0;
-        this.state.currentSongIndex = 0;
+        this.state.currentItemIndex = 0;
     }
 };
 
