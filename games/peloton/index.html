@@ -72,31 +72,30 @@
         </div>
 
         <div id="screen-game" class="screen">
-            <div class="game-hud">
-                <div class="team-meter">
-                    <div class="meter-label">Team Energy</div>
-                    <div class="meter-bar">
-                        <span id="team-energy-fill"></span>
+            <div class="peloton-stage">
+                <canvas id="track-canvas" width="700" height="700"></canvas>
+
+                <div class="stage-overlay">
+                    <div class="game-hud">
+                        <div class="team-meter">
+                            <div class="meter-label">Team Energy</div>
+                            <div class="meter-bar">
+                                <span id="team-energy-fill"></span>
+                            </div>
+                        </div>
+                        <div class="hud-readouts">
+                            <span id="pace-readout">Pace: --.- m/s</span>
+                            <span id="harmony-message">Find your line…</span>
+                        </div>
                     </div>
-                </div>
-                <div class="hud-readouts">
-                    <span id="pace-readout">Pace: --.- m/s</span>
-                    <span id="harmony-message">Find your line…</span>
-                </div>
-            </div>
 
-            <div class="game-body">
-                <div class="track-wrapper">
-                    <canvas id="track-canvas" width="700" height="700"></canvas>
-                </div>
-                <div class="sidebar">
                     <div id="player-panels" class="player-panels"></div>
-                    <div class="controls-title">Touch Controls</div>
-                    <div id="control-grid" class="control-grid"></div>
                 </div>
+
+                <div id="touch-control-rails" class="touch-control-rails"></div>
             </div>
 
-            <div class="button-group">
+            <div class="button-group stage-buttons">
                 <button class="btn btn-secondary" onclick="PelotonGame.showWelcome()">Quit</button>
                 <button class="btn btn-primary" onclick="PelotonGame.resetRace()">Restart Lap</button>
             </div>
