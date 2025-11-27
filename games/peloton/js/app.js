@@ -876,7 +876,7 @@ const Game = {
             const laneRadius = trackCenter + player.laneOffset * trackWidth;
             const x = center + Math.cos(player.angle) * laneRadius;
             const y = center + Math.sin(player.angle) * laneRadius;
-            const bikeAngle = player.angle + Math.PI / 2; // Bike faces direction of travel
+            const bikeAngle = player.angle + Math.PI; // Bike faces direction of travel
 
             // Draw drafting energy glow (pulsing green aura when gaining energy)
             if (player.isDrafting) {
