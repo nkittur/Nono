@@ -64,7 +64,7 @@ const PelotonGame = {
             paceReadout: document.getElementById('pace-readout'),
             harmonyMessage: document.getElementById('harmony-message'),
             playerPanels: document.getElementById('player-panels'),
-            touchControls: document.getElementById('touch-control-rails'),
+            touchControls: document.getElementById('pedal-strip'),
             toast: document.getElementById('toast')
         };
 
@@ -209,92 +209,66 @@ const PelotonGame = {
     },
 
     renderTouchControls() {
-        if (!this.elements.touchControls) return;
-        this.elements.touchControls.innerHTML = '';
+        const container = this.elements.touchControls;
+        if (!container) return;
+        container.innerHTML = '';
         this.state.controlButtons = [];
 
-        const leftColumn = document.createElement('div');
-        leftColumn.className = 'touch-rail';
-        const rightColumn = document.createElement('div');
-        rightColumn.className = 'touch-rail';
-        this.elements.touchControls.appendChild(leftColumn);
-        this.elements.touchControls.appendChild(rightColumn);
-
-        const splitIndex = Math.ceil(this.state.playerCount / 2);
-        const formatKey = (key) => {
-            if (!key || typeof key !== 'string') return '—';
-            const normalized = key.toLowerCase();
-            const specials = {
-                arrowleft: '←',
-                arrowright: '→',
-                arrowup: '↑',
-                arrowdown: '↓'
-            };
-            if (specials[normalized]) return specials[normalized];
-            return key.length === 1 ? key.toUpperCase() : key.toUpperCase();
-        };
-        const withAlpha = (hex, alpha = 102) => {
-            if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) {
-                return `rgba(14, 165, 233, ${(alpha / 255).toFixed(2)})`;
+        const iconMarkup = (side) => {
+            if (side === 'left') {
+                return `
+                    <svg viewBox="0 0 48 48" class="pedal-svg" aria-hidden="true" focusable="false">
+                        <circle cx="30" cy="24" r="12"></circle>
+                        <rect x="6" y="21" width="18" height="6" rx="3"></rect>
+                        <circle cx="10" cy="24" r="3"></circle>
+                    </svg>
+                `;
             }
-            if (hex.length === 9) return hex;
-            return `${hex}${alpha.toString(16).padStart(2, '0')}`;
+            return `
+                <svg viewBox="0 0 48 48" class="pedal-svg" aria-hidden="true" focusable="false">
+                    <circle cx="18" cy="24" r="12"></circle>
+                    <rect x="24" y="21" width="18" height="6" rx="3"></rect>
+                    <circle cx="38" cy="24" r="3"></circle>
+                </svg>
+            `;
         };
 
         this.state.players.forEach((player, index) => {
-            const binding = this.config.controlBindings[index] || {};
-            const column = index < splitIndex ? leftColumn : rightColumn;
-            const pad = document.createElement('div');
-            pad.className = 'touch-pad';
-            pad.style.borderColor = withAlpha(player.color, 140);
-            pad.style.boxShadow = `0 8px 28px ${withAlpha(player.color, 34)}, inset 0 0 0 1px ${withAlpha(player.color, 96)}`;
+            const pod = document.createElement('div');
+            pod.className = 'pedal-pod';
+            pod.style.setProperty('--pod-color', player.color || '#7dd3fc');
 
-            const label = document.createElement('div');
-            label.className = 'pad-label';
-            label.innerHTML = `
-                <span class="badge">P${index + 1}</span>
-                <span>${player.label}</span>
-            `;
+            const label = document.createElement('span');
+            label.className = 'pedal-label';
+            label.textContent = `P${index + 1}`;
 
-            const buttonsWrapper = document.createElement('div');
-            buttonsWrapper.className = 'pedal-buttons';
+            const pair = document.createElement('div');
+            pair.className = 'pedal-icon-pair';
 
-            const leftBtn = document.createElement('button');
-            leftBtn.type = 'button';
-            leftBtn.className = 'pedal-btn pedal-left';
-            leftBtn.innerHTML = `
-                Left Pedal
-                <span>${formatKey(binding.leftPedal || binding.left)}</span>
-            `;
-
-            const rightBtn = document.createElement('button');
-            rightBtn.type = 'button';
-            rightBtn.className = 'pedal-btn pedal-right';
-            rightBtn.innerHTML = `
-                Right Pedal
-                <span>${formatKey(binding.rightPedal || binding.right)}</span>
-            `;
-
-            const refs = { left: leftBtn, right: rightBtn };
-
-            const bindButton = (btn, pedalSide) => {
-                btn.addEventListener('mousedown', () => this.handlePedal(index, pedalSide));
+            const makeButton = (side) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'pedal-icon';
+                btn.innerHTML = iconMarkup(side);
+                btn.setAttribute('aria-label', `${side === 'left' ? 'Left' : 'Right'} pedal for ${player.label}`);
+                btn.addEventListener('mousedown', () => this.handlePedal(index, side));
                 btn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    this.handlePedal(index, pedalSide);
+                    this.handlePedal(index, side);
                 }, { passive: false });
+                return btn;
             };
 
-            bindButton(leftBtn, 'left');
-            bindButton(rightBtn, 'right');
+            const leftBtn = makeButton('left');
+            const rightBtn = makeButton('right');
 
-            buttonsWrapper.appendChild(leftBtn);
-            buttonsWrapper.appendChild(rightBtn);
+            pair.appendChild(leftBtn);
+            pair.appendChild(rightBtn);
 
-            pad.appendChild(label);
-            pad.appendChild(buttonsWrapper);
-            column.appendChild(pad);
-            this.state.controlButtons.push(refs);
+            pod.appendChild(label);
+            pod.appendChild(pair);
+            container.appendChild(pod);
+            this.state.controlButtons.push({ left: leftBtn, right: rightBtn });
         });
     },
 
