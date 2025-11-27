@@ -229,12 +229,11 @@
 }
 
 /* ========================================
-   Question Screen - Compact Integrated Design
+   Question Screen - Redesigned
    ======================================== */
 
 #screen-question {
     padding: 0;
-    display: flex;
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
@@ -243,207 +242,238 @@
 
 #screen-question.active {
     display: flex;
+    flex-direction: column;
 }
 
 .question-header {
-    padding: var(--space-xs) var(--space-md);
-    padding-top: calc(var(--space-xs) + var(--safe-area-top) + 50px);
+    padding: var(--space-sm) var(--space-md);
+    padding-top: calc(var(--space-sm) + var(--safe-area-top) + 50px);
     text-align: center;
-    background: transparent;
+    background: var(--bg-card);
     flex-shrink: 0;
+}
+
+.question-progress {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Options Row - Side by Side at Top */
+.options-row {
+    display: flex;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--bg-primary);
+    flex-shrink: 0;
+}
+
+.option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    min-height: 100px;
+}
+
+.option-a {
+    border: 3px solid var(--wyr-option-a);
+}
+
+.option-b {
+    border: 3px solid var(--wyr-option-b);
+}
+
+.option-label {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: var(--space-xs);
+}
+
+.option-a .option-label {
+    color: var(--wyr-option-a);
+}
+
+.option-b .option-label {
+    color: var(--wyr-option-b);
+}
+
+.option-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+/* Scale/Spectrum Area */
+.scale-container {
+    padding: var(--space-lg) var(--space-md);
+    background: var(--bg-card);
+    flex-shrink: 0;
+}
+
+.question-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    background: var(--bg-primary);
+    padding: var(--space-md) 0;
+}
+
+.scale-track {
+    position: relative;
+    height: 80px;
+    border-radius: var(--radius-lg);
+    overflow: visible;
+    margin-bottom: var(--space-sm);
+    cursor: pointer;
+    touch-action: none;
+}
+
+.scale-gradient {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 10;
+    bottom: 0;
+    background: linear-gradient(90deg, var(--wyr-option-a) 0%, #9333ea 50%, var(--wyr-option-b) 100%);
+    border-radius: var(--radius-lg);
+    opacity: 0.3;
 }
 
-.question-progress {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-    background: rgba(0, 0, 0, 0.3);
-    padding: 4px 12px;
-    border-radius: 20px;
-    display: inline-block;
-}
-
-/* Integrated Choice + Scale Area */
-.choice-scale-area {
-    background: linear-gradient(135deg, var(--wyr-option-a) 0%, #9333ea 50%, var(--wyr-option-b) 100%);
-    padding: var(--space-md);
-    padding-top: calc(var(--space-md) + var(--safe-area-top) + 60px);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: var(--space-sm);
-    flex-shrink: 0;
-    position: relative;
-}
-
-.choice {
-    text-align: center;
-    padding: var(--space-sm);
-}
-
-.choice-a {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-.choice-b {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-.choice-text {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: white;
-    line-height: 1.3;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Token track - spans both columns */
-.token-track {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    position: relative;
-    height: 50px;
+.scale-tokens {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: var(--radius-lg);
-    margin-top: var(--space-xs);
 }
 
 .scale-token {
     position: absolute;
-    font-size: 2rem;
+    font-size: 2.5rem;
     transform: translateX(-50%);
     transition: left 0.15s ease-out;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     z-index: 1;
+    opacity: 0.4;
+}
+
+.scale-token.pending {
+    opacity: 0.25;
+    filter: grayscale(0.3) drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.scale-token.active {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
 }
 
 .scale-token.locked {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
     animation: tokenBounce 0.3s ease;
+}
+
+.scale-token.hidden-vote {
+    opacity: 0;
+    pointer-events: none;
 }
 
 @keyframes tokenBounce {
     0%, 100% { transform: translateX(-50%) scale(1); }
-    50% { transform: translateX(-50%) scale(1.3); }
+    50% { transform: translateX(-50%) scale(1.2); }
 }
 
-.scale-token.hidden {
-    opacity: 0.4;
+.scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    font-weight: 700;
 }
 
-/* Player Touch Zones */
-.player-zones {
+.scale-label-a {
+    color: var(--wyr-option-a);
+}
+
+.scale-label-b {
+    color: var(--wyr-option-b);
+}
+
+/* Sequential Turn Card */
+.turn-card {
+    margin: 0 var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.turn-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
     flex: 1;
-    display: grid;
-    gap: var(--space-xs);
-    padding: var(--space-xs);
-    background: var(--bg-primary);
-    min-height: 0;
-    overflow: hidden;
 }
 
-.player-zone {
-    position: relative;
+.turn-animal {
+    font-size: 2.75rem;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-md);
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    transition: all 0.2s ease;
-    overflow: hidden;
-    min-height: 50px;
+    box-shadow: var(--shadow-sm);
 }
 
-.player-zone.p1 { background: var(--player-1); }
-.player-zone.p2 { background: var(--player-2); }
-.player-zone.p3 { background: var(--player-3); }
-.player-zone.p4 { background: var(--player-4); }
-.player-zone.p5 { background: var(--player-5); }
-.player-zone.p6 { background: var(--player-6); }
-.player-zone.p7 { background: var(--player-7); }
-.player-zone.p8 { background: var(--player-8); }
-
-.zone-content {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    color: white;
-    text-align: center;
-    pointer-events: none;
-}
-
-.zone-animal {
-    font-size: 1.5rem;
-}
-
-.zone-label {
-    font-size: 0.8rem;
+.turn-label {
+    font-size: 1rem;
     font-weight: 700;
-    opacity: 0.9;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
 }
 
-.zone-hint {
-    font-size: 0.65rem;
-    opacity: 0.7;
+.turn-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
-.zone-status {
-    display: none;
-    font-size: 0.7rem;
-    font-weight: 600;
-    opacity: 0.9;
+.turn-card .btn {
+    flex-shrink: 0;
 }
 
-/* Zone States */
-.player-zone.touching {
-    transform: scale(0.98);
-    opacity: 0.9;
-}
-
-.player-zone.locked {
-    opacity: 0.6;
-}
-
-.player-zone.locked .zone-hint {
-    display: none;
-}
-
-.player-zone.locked .zone-status {
-    display: block;
-}
-
-/* Voting Footer - Always visible */
+/* Voting Footer */
 .voting-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-sm) var(--space-md);
-    padding-bottom: calc(var(--space-sm) + var(--safe-area-bottom));
+    padding: var(--space-md);
     background: var(--bg-card);
     flex-shrink: 0;
     gap: var(--space-md);
-    z-index: 20;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .voting-status {
     font-weight: 600;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
 .voting-footer .btn {
     flex-shrink: 0;
-    padding: var(--space-sm) var(--space-md);
 }
 
 /* ========================================
@@ -502,60 +532,6 @@
 }
 
 /* ========================================
-   Grid Layouts for Different Player Counts
-   ======================================== */
-
-/* 2 players */
-.player-zones.players-2 {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-}
-
-/* 3 players */
-.player-zones.players-3 {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-/* 4 players - 2x2 */
-.player-zones.players-4 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-}
-
-/* 5 players */
-.player-zones.players-5 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-.player-zones.players-5 .player-zone:nth-child(5) {
-    grid-column: span 2;
-}
-
-/* 6 players - 2x3 */
-.player-zones.players-6 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-/* 7 players */
-.player-zones.players-7 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
-}
-
-.player-zones.players-7 .player-zone:nth-child(7) {
-    grid-column: span 2;
-}
-
-/* 8 players - 2x4 */
-.player-zones.players-8 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
-}
-
-/* ========================================
    Responsive
    ======================================== */
 
@@ -564,33 +540,25 @@
         font-size: 2rem;
     }
 
-    .choice-text {
-        font-size: 0.85rem;
+    .option-text {
+        font-size: 0.8rem;
     }
 
     .scale-token {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
 
-    .zone-animal {
-        font-size: 1.25rem;
-    }
-
-    .token-track {
-        height: 40px;
+    .turn-animal {
+        font-size: 1.5rem;
     }
 }
 
-@media (min-height: 750px) {
-    .token-track {
-        height: 60px;
+@media (min-height: 800px) {
+    .scale-track {
+        height: 100px;
     }
 
     .scale-token {
-        font-size: 2.25rem;
-    }
-
-    .player-zone {
-        min-height: 60px;
+        font-size: 3rem;
     }
 }

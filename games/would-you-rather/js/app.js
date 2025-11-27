@@ -14,10 +14,11 @@ const Game = {
         questionCount: 10,
         currentQuestion: 0,
         questions: [],
-        // Player data: { position: 0-100 (50 = center), locked: boolean, touchId: null }
+        // Player data: { position: 0-100 (50 = center), locked: boolean }
         players: [],
-        // Touch tracking
-        touches: {}, // touchId -> { playerIndex, startX, zoneWidth }
+        currentPlayerIndex: 0,
+        activePointerId: null,
+        revealVotes: false,
         // Stats
         unanimousCount: 0,
         splitCount: 0
@@ -31,6 +32,7 @@ const Game = {
      */
     init() {
         this.cacheElements();
+        this.initScaleInteraction();
         this.updateSetupPreview();
         this.showScreen('welcome');
     },
@@ -54,10 +56,13 @@ const Game = {
             optionAText: document.getElementById('option-a-text'),
             optionBText: document.getElementById('option-b-text'),
             scaleTokens: document.getElementById('scale-tokens'),
-            playerZones: document.getElementById('player-zones'),
+            scaleTrack: document.getElementById('scale-track'),
             votesCount: document.getElementById('votes-count'),
             votesTotal: document.getElementById('votes-total'),
             nextBtn: document.getElementById('next-btn'),
+            currentPlayerAnimal: document.getElementById('current-player-animal'),
+            currentPlayerLabel: document.getElementById('current-player-label'),
+            lockBtn: document.getElementById('lock-btn'),
             statQuestions: document.getElementById('stat-questions'),
             statUnanimous: document.getElementById('stat-unanimous'),
             statSplit: document.getElementById('stat-split')
@@ -162,15 +167,16 @@ const Game = {
         for (let i = 0; i < this.state.playerCount; i++) {
             this.state.players.push({
                 position: 50, // Start in the middle
-                locked: false,
-                touchId: null
+                locked: false
             });
         }
-        this.state.touches = {};
+        this.state.currentPlayerIndex = 0;
+        this.state.activePointerId = null;
+        this.state.revealVotes = false;
 
         // Setup UI
         this.setupScaleTokens();
-        this.setupPlayerZones();
+        this.beginPlayerTurn(0);
         this.updateVoteStatus();
 
         // Disable next button initially
@@ -192,7 +198,7 @@ const Game = {
 
         for (let i = 0; i < this.state.playerCount; i++) {
             const token = document.createElement('div');
-            token.className = 'scale-token hidden';
+            token.className = 'scale-token pending';
             token.id = `token-${i}`;
             token.textContent = this.ANIMALS[i];
             token.style.left = '50%';
@@ -201,186 +207,145 @@ const Game = {
     },
 
     /**
-     * Setup player touch zones
+     * Setup pointer/touch controls for the shared scale
      */
-    setupPlayerZones() {
-        const container = this.elements.playerZones;
-        container.innerHTML = '';
-        container.className = `player-zones players-${this.state.playerCount}`;
+    initScaleInteraction() {
+        const track = this.elements.scaleTrack;
+        if (!track) return;
 
-        for (let i = 0; i < this.state.playerCount; i++) {
-            const zone = document.createElement('div');
-            zone.className = `player-zone p${i + 1}`;
-            zone.dataset.playerIndex = i;
-
-            zone.innerHTML = `
-                <div class="zone-content">
-                    <span class="zone-animal">${this.ANIMALS[i]}</span>
-                    <div>
-                        <span class="zone-label">Player ${i + 1}</span>
-                        <span class="zone-hint">Drag left or right</span>
-                        <span class="zone-status">Locked in!</span>
-                    </div>
-                </div>
-            `;
-
-            // Touch events
-            zone.addEventListener('touchstart', (e) => this.handleTouchStart(e, i), { passive: false });
-            zone.addEventListener('touchmove', (e) => this.handleTouchMove(e, i), { passive: false });
-            zone.addEventListener('touchend', (e) => this.handleTouchEnd(e, i), { passive: false });
-            zone.addEventListener('touchcancel', (e) => this.handleTouchEnd(e, i), { passive: false });
-
-            container.appendChild(zone);
-        }
+        track.addEventListener('pointerdown', (e) => this.handleScalePointerDown(e));
+        track.addEventListener('pointermove', (e) => this.handleScalePointerMove(e));
+        track.addEventListener('pointerup', (e) => this.handleScalePointerUp(e));
+        track.addEventListener('pointercancel', (e) => this.handleScalePointerUp(e));
+        track.addEventListener('pointerleave', (e) => this.handleScalePointerUp(e));
     },
 
-    /**
-     * Handle touch start
-     */
-    handleTouchStart(e, playerIndex) {
+    hasActivePlayer() {
+        const player = this.state.players[this.state.currentPlayerIndex];
+        return Boolean(player && !player.locked);
+    },
+
+    handleScalePointerDown(e) {
+        if (this.state.currentScreen !== 'question' || !this.hasActivePlayer()) return;
         e.preventDefault();
-        const player = this.state.players[playerIndex];
-        if (player.locked) return;
+        const track = this.elements.scaleTrack;
+        if (!track) return;
 
-        const zone = e.currentTarget;
-
-        // Track the first new touch for this player
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
-
-            // Only track if this player doesn't have a touch yet
-            if (player.touchId === null) {
-                player.touchId = touch.identifier;
-                this.state.touches[touch.identifier] = {
-                    playerIndex: playerIndex,
-                    startX: touch.clientX,
-                    startPosition: player.position,
-                    zoneWidth: zone.offsetWidth
-                };
-
-                zone.classList.add('touching');
-
-                // Show the token (unhide)
-                const token = document.getElementById(`token-${playerIndex}`);
-                if (token) {
-                    token.classList.remove('hidden');
-                }
-                break;
-            }
-        }
+        this.state.activePointerId = e.pointerId;
+        track.setPointerCapture?.(e.pointerId);
+        this.updateCurrentPlayerPositionFromClientX(e.clientX);
     },
 
-    /**
-     * Handle touch move
-     */
-    handleTouchMove(e, playerIndex) {
+    handleScalePointerMove(e) {
+        if (this.state.activePointerId !== e.pointerId) return;
         e.preventDefault();
-        const player = this.state.players[playerIndex];
-        if (player.locked || player.touchId === null) return;
-
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
-
-            if (touch.identifier === player.touchId) {
-                const trackingData = this.state.touches[touch.identifier];
-                if (!trackingData) return;
-
-                const deltaX = touch.clientX - trackingData.startX;
-                // Calculate new position based on drag distance relative to zone width
-                // Full zone width = 100% movement
-                const deltaPercent = (deltaX / trackingData.zoneWidth) * 100;
-                let newPosition = trackingData.startPosition + deltaPercent;
-
-                // Clamp to 0-100
-                newPosition = Math.max(0, Math.min(100, newPosition));
-                player.position = newPosition;
-
-                // Update token position
-                this.updateTokenPosition(playerIndex);
-
-                // Update zone visual feedback
-                this.updateZoneFeedback(e.currentTarget, newPosition);
-            }
-        }
+        this.updateCurrentPlayerPositionFromClientX(e.clientX);
     },
 
-    /**
-     * Handle touch end
-     */
-    handleTouchEnd(e, playerIndex) {
+    handleScalePointerUp(e) {
+        if (this.state.activePointerId !== e.pointerId) return;
         e.preventDefault();
-        const player = this.state.players[playerIndex];
+        const track = this.elements.scaleTrack;
+        track?.releasePointerCapture?.(e.pointerId);
+        this.state.activePointerId = null;
+        this.updateCurrentPlayerPositionFromClientX(e.clientX);
+    },
 
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
+    updateCurrentPlayerPositionFromClientX(clientX) {
+        const track = this.elements.scaleTrack;
+        if (!track) return;
+        const rect = track.getBoundingClientRect();
+        if (!rect.width) return;
 
-            if (touch.identifier === player.touchId) {
-                const zone = e.currentTarget;
-                zone.classList.remove('touching');
-                this.clearZoneFeedback(zone);
+        let percent = ((clientX - rect.left) / rect.width) * 100;
+        percent = Math.max(0, Math.min(100, percent));
+        this.setCurrentPlayerPosition(percent);
+    },
 
-                if (!player.locked) {
-                    // Lock in the vote when finger lifts
-                    this.lockVote(playerIndex, zone);
-                }
+    setCurrentPlayerPosition(percent) {
+        const player = this.state.players[this.state.currentPlayerIndex];
+        if (!player || player.locked) return;
 
-                // Clear tracking
-                delete this.state.touches[touch.identifier];
-                player.touchId = null;
-            }
-        }
+        player.position = percent;
+        this.updateTokenStates();
     },
 
     /**
-     * Update token position on scale
+     * Begin the current player's turn
      */
+    beginPlayerTurn(playerIndex) {
+        if (playerIndex < 0 || playerIndex >= this.state.playerCount) return;
+        this.state.currentPlayerIndex = playerIndex;
+        const player = this.state.players[playerIndex];
+        if (!player) return;
+
+        player.position = 50;
+        this.updateTurnIndicator();
+        this.updateTokenStates();
+    },
+
+    updateTurnIndicator() {
+        const { currentPlayerIndex, playerCount } = this.state;
+        const animal = this.ANIMALS[currentPlayerIndex];
+
+        if (this.elements.currentPlayerAnimal && animal) {
+            this.elements.currentPlayerAnimal.textContent = animal;
+        }
+        if (this.elements.currentPlayerLabel) {
+            this.elements.currentPlayerLabel.textContent = `Player ${currentPlayerIndex + 1} of ${playerCount}, take your turn.`;
+        }
+        if (this.elements.lockBtn) {
+            this.elements.lockBtn.disabled = false;
+            this.elements.lockBtn.textContent =
+                currentPlayerIndex === playerCount - 1 ? 'Lock & Finish' : 'Lock & Pass';
+        }
+    },
+
     updateTokenPosition(playerIndex) {
         const player = this.state.players[playerIndex];
         const token = document.getElementById(`token-${playerIndex}`);
-        if (token) {
+        if (token && player) {
             token.style.left = `${player.position}%`;
         }
     },
 
-    /**
-     * Update zone visual feedback (pseudo-element indicators)
-     */
-    updateZoneFeedback(zone, position) {
-        // Position 0 = full left (A), 100 = full right (B)
-        const leftWidth = Math.max(0, 50 - position);
-        const rightWidth = Math.max(0, position - 50);
+    updateTokenStates() {
+        this.state.players.forEach((player, index) => {
+            const token = document.getElementById(`token-${index}`);
+            if (!token) return;
 
-        zone.style.setProperty('--left-indicator', `${leftWidth}%`);
-        zone.style.setProperty('--right-indicator', `${rightWidth}%`);
+            this.updateTokenPosition(index);
+            const isCurrentPlayer = index === this.state.currentPlayerIndex && !player.locked;
+            const shouldRevealVotes = this.state.revealVotes;
+            const shouldShowToken = shouldRevealVotes || isCurrentPlayer;
+
+            token.classList.toggle('hidden-vote', !shouldShowToken);
+            token.classList.toggle('active', isCurrentPlayer && shouldShowToken);
+            token.classList.toggle('pending', !player.locked && !isCurrentPlayer && shouldShowToken);
+            token.classList.toggle('locked', player.locked && shouldRevealVotes);
+        });
     },
 
     /**
-     * Clear zone feedback
+     * Lock the current player's vote and advance
      */
-    clearZoneFeedback(zone) {
-        zone.style.removeProperty('--left-indicator');
-        zone.style.removeProperty('--right-indicator');
-    },
+    lockCurrentPlayer() {
+        const player = this.state.players[this.state.currentPlayerIndex];
+        if (!player || player.locked) return;
 
-    /**
-     * Lock in a vote
-     */
-    lockVote(playerIndex, zone) {
-        const player = this.state.players[playerIndex];
         player.locked = true;
+        this.updateTokenStates();
+        this.updateVoteStatus();
 
-        // Update zone appearance
-        zone.classList.add('locked');
-
-        // Add bounce animation to token
-        const token = document.getElementById(`token-${playerIndex}`);
-        if (token) {
-            token.classList.add('locked');
-            // Remove animation class after it completes
-            setTimeout(() => token.classList.remove('locked'), 300);
+        if (this.state.players.every(p => p.locked)) {
+            if (this.elements.currentPlayerLabel) {
+                this.elements.currentPlayerLabel.textContent = 'All players are locked in!';
+            }
+            return;
         }
 
-        this.updateVoteStatus();
+        const nextIndex = this.state.currentPlayerIndex + 1;
+        this.beginPlayerTurn(nextIndex);
     },
 
     /**
@@ -393,9 +358,18 @@ const Game = {
 
         // Enable next button when all locked
         if (lockedCount === this.state.playerCount) {
+            this.state.revealVotes = true;
             this.elements.nextBtn.disabled = false;
+            if (this.elements.lockBtn) {
+                this.elements.lockBtn.disabled = true;
+                this.elements.lockBtn.textContent = 'All votes in!';
+            }
             this.trackStats();
+        } else {
+            this.elements.nextBtn.disabled = true;
         }
+
+        this.updateTokenStates();
     },
 
     /**
