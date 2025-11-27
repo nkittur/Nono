@@ -297,3 +297,4 @@
 .game-tile:nth-child(6) { animation-delay: 150ms; }
 .game-tile:nth-child(7) { animation-delay: 180ms; }
 .game-tile:nth-child(8) { animation-delay: 210ms; }
+.game-tile:nth-child(9) { animation-delay: 240ms; }

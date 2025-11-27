@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Peloton Pulse - Team cycling game! Draft together to victory!">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Peloton Pulse - Team Cycling Game!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚴</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🚴</span>
+                    <h1 class="logo-text">Peloton Pulse</h1>
+                </div>
+                <p class="tagline">Draft Together, Win Together!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">🦶</span> Alternate LEFT & RIGHT pedals to go fast</li>
+                        <li><span class="rule-icon">↔️</span> Pedals steer opposite (like rowing)</li>
+                        <li><span class="rule-icon">💨</span> Draft behind teammates to save energy</li>
+                        <li><span class="rule-icon">🔄</span> Take turns leading - leaders tire fast!</li>
+                        <li><span class="rule-icon">🏆</span> Complete laps together as a team</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Start Game
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Game Setup</h2>
+
+                <div class="setup-section">
+                    <h3>Number of Riders</h3>
+                    <div class="player-count-options">
+                        <button class="btn btn-option" data-count="1" onclick="Game.setPlayerCount(1)">
+                            <span class="count-num">1</span>
+                            <span class="count-label">Solo</span>
+                        </button>
+                        <button class="btn btn-option active" data-count="2" onclick="Game.setPlayerCount(2)">
+                            <span class="count-num">2</span>
+                            <span class="count-label">Duo</span>
+                        </button>
+                        <button class="btn btn-option" data-count="3" onclick="Game.setPlayerCount(3)">
+                            <span class="count-num">3</span>
+                            <span class="count-label">Trio</span>
+                        </button>
+                        <button class="btn btn-option" data-count="4" onclick="Game.setPlayerCount(4)">
+                            <span class="count-num">4</span>
+                            <span class="count-label">Squad</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Player Positions</h3>
+                    <p class="setup-hint">Tap to assign riders to sides</p>
+                    <div class="position-selector">
+                        <div class="position-grid">
+                            <div class="position-slot top" data-side="top" onclick="Game.toggleSide('top')">
+                                <span class="position-label">Top</span>
+                                <span class="position-player"></span>
+                            </div>
+                            <div class="position-slot left" data-side="left" onclick="Game.toggleSide('left')">
+                                <span class="position-label">Left</span>
+                                <span class="position-player"></span>
+                            </div>
+                            <div class="position-center">🚴</div>
+                            <div class="position-slot right" data-side="right" onclick="Game.toggleSide('right')">
+                                <span class="position-label">Right</span>
+                                <span class="position-player"></span>
+                            </div>
+                            <div class="position-slot bottom" data-side="bottom" onclick="Game.toggleSide('bottom')">
+                                <span class="position-label">Bottom</span>
+                                <span class="position-player"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Race Length</h3>
+                    <div class="race-length-options">
+                        <button class="btn btn-option" data-laps="3" onclick="Game.setRaceLength(3)">
+                            <span class="laps-num">3</span>
+                            <span class="laps-label">Laps</span>
+                        </button>
+                        <button class="btn btn-option active" data-laps="5" onclick="Game.setRaceLength(5)">
+                            <span class="laps-num">5</span>
+                            <span class="laps-label">Laps</span>
+                        </button>
+                        <button class="btn btn-option" data-laps="10" onclick="Game.setRaceLength(10)">
+                            <span class="laps-num">10</span>
+                            <span class="laps-label">Laps</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" onclick="Game.startGame()">Race!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="screen-game" class="screen">
+            <div class="game-hud">
+                <div class="hud-info">
+                    <div class="lap-counter" id="lap-counter">Lap 1/5</div>
+                </div>
+                <button class="btn btn-pause" onclick="Game.togglePause()">
+                    <span id="pause-icon">⏸️</span>
+                </button>
+            </div>
+
+            <div class="energy-bars" id="energy-bars">
+                <!-- Energy bars populated by JS -->
+            </div>
+
+            <div class="game-container">
+                <canvas id="game-canvas"></canvas>
+            </div>
+
+            <div class="touch-zones" id="touch-zones">
+                <!-- Touch zones with pedals populated by JS -->
+            </div>
+
+            <div class="pause-overlay" id="pause-overlay">
+                <div class="pause-content">
+                    <h2>Paused</h2>
+                    <div class="pause-buttons">
+                        <button class="btn btn-primary" onclick="Game.togglePause()">Resume</button>
+                        <button class="btn btn-secondary" onclick="Game.quitGame()">Quit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="screen-gameover" class="screen">
+            <div class="screen-content center-content">
+                <div class="gameover-icon" id="gameover-icon">🏆</div>
+                <h1 class="gameover-title" id="gameover-title">Race Complete!</h1>
+                <p class="gameover-subtitle" id="gameover-subtitle">Great teamwork!</p>
+
+                <div class="gameover-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="stat-laps">5</span>
+                        <span class="stat-label">Laps</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="stat-time">0:00</span>
+                        <span class="stat-label">Time</span>
+                    </div>
+                </div>
+
+                <div class="rider-stats" id="rider-stats">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
+                        Race Again
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../../'">
+                        All Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
