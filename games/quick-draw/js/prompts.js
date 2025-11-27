@@ -267,7 +267,7 @@ const PROMPTS = {
 };
 
 // Stroke limits by difficulty - stricter limits for more challenge
-const DIFFICULTY_SETTINGS = {
+const BASE_DIFFICULTIES = {
     easy: {
         name: "Easy",
         strokes: 10,
@@ -279,11 +279,15 @@ const DIFFICULTY_SETTINGS = {
         strokes: 7,
         inkLimit: 800,
         time: 45
-    },
+    }
+};
+
+const DIFFICULTY_SETTINGS = {
+    ...BASE_DIFFICULTIES,
     hard: {
         name: "Hard",
         strokes: 1,
-        inkLimit: 400,
+        inkLimit: Math.floor(BASE_DIFFICULTIES.medium.inkLimit / 2), // half the next level
         time: 30
     }
 };
