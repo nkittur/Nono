@@ -19,10 +19,39 @@
                 <span class="hub-icon">🎮</span>
                 <div class="hub-title-group">
                     <h1 class="hub-title">Party Games</h1>
-                    <p class="hub-subtitle">Pass & Play Together</p>
+                    <p class="hub-subtitle">Cooperate. Connect. Have Fun.</p>
                 </div>
+                <button class="info-btn" onclick="toggleAbout()" aria-label="About these games">
+                    <span class="info-icon">ℹ️</span>
+                </button>
             </div>
         </header>
+
+        <!-- Collapsible About Section -->
+        <div class="about-panel" id="about-panel">
+            <div class="about-content">
+                <p class="about-tagline">Games that bring people together</p>
+                <div class="about-points">
+                    <div class="about-point">
+                        <span class="point-icon">🤝</span>
+                        <span>Cooperation over competition — work together as a team</span>
+                    </div>
+                    <div class="about-point">
+                        <span class="point-icon">⚡</span>
+                        <span>Pick up and play anywhere — in line, at dinner, on the couch</span>
+                    </div>
+                    <div class="about-point">
+                        <span class="point-icon">💬</span>
+                        <span>Spark conversations and hilarious moments</span>
+                    </div>
+                    <div class="about-point">
+                        <span class="point-icon">❤️</span>
+                        <span>Screens that connect people in real life</span>
+                    </div>
+                </div>
+                <button class="about-close" onclick="toggleAbout()">Got it!</button>
+            </div>
+        </div>
 
         <main class="hub-content">
             <section class="games-section">
@@ -128,8 +157,15 @@
 
         <footer class="hub-footer">
             <p>Made for fun moments with friends & family</p>
-            <p class="version">v1.4</p>
+            <p class="version">v1.5</p>
         </footer>
     </div>
+
+    <script>
+        function toggleAbout() {
+            const panel = document.getElementById('about-panel');
+            panel.classList.toggle('open');
+        }
+    </script>
 </body>
 </html>
