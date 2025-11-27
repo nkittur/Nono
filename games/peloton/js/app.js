@@ -873,58 +873,154 @@ const Game = {
         // Sort players by position (to draw back to front)
         const sortedPlayers = [...this.state.players].sort((a, b) => a.angle - b.angle);
 
+        // Animate glow pulse
+        const glowPulse = 0.5 + Math.sin(Date.now() / 200) * 0.5;
+
         sortedPlayers.forEach(player => {
             // Calculate position on track
             const laneRadius = trackCenter + player.laneOffset * trackWidth;
             const x = center + Math.cos(player.angle) * laneRadius;
             const y = center + Math.sin(player.angle) * laneRadius;
+            const bikeAngle = player.angle + Math.PI / 2; // Bike faces direction of travel
 
-            // Draw drafting indicator (wind lines)
+            // Draw drafting energy glow (pulsing green aura when gaining energy)
             if (player.isDrafting) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                const glowSize = 25 + glowPulse * 10;
+                const gradient = ctx.createRadialGradient(x, y, 5, x, y, glowSize);
+                gradient.addColorStop(0, 'rgba(34, 197, 94, 0.6)');
+                gradient.addColorStop(0.5, 'rgba(34, 197, 94, 0.3)');
+                gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+                ctx.beginPath();
+                ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Draw wind/draft lines behind the bike
+                ctx.strokeStyle = 'rgba(34, 197, 94, 0.6)';
                 ctx.lineWidth = 2;
-                for (let i = 1; i <= 3; i++) {
-                    const offset = i * 8;
+                for (let i = 1; i <= 4; i++) {
+                    const offset = i * 7;
                     const windX = x - Math.cos(player.angle) * offset;
                     const windY = y - Math.sin(player.angle) * offset;
                     ctx.beginPath();
-                    ctx.moveTo(windX - 5, windY);
-                    ctx.lineTo(windX + 5, windY);
+                    ctx.moveTo(windX - 4, windY - 4);
+                    ctx.lineTo(windX + 4, windY + 4);
                     ctx.stroke();
                 }
             }
 
             // Draw bike shadow
+            ctx.save();
+            ctx.translate(x + 2, y + 2);
+            ctx.rotate(bikeAngle);
             ctx.beginPath();
-            ctx.ellipse(x + 2, y + 2, cfg.bikeRadius, cfg.bikeRadius * 0.6, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 0, 8, 14, 0, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fill();
+            ctx.restore();
 
-            // Draw bike body
+            // Draw the bike (cyclist shape)
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(bikeAngle);
+
+            // Bike frame color
+            const bikeColor = player.color;
+
+            // Back wheel
             ctx.beginPath();
-            ctx.arc(x, y, cfg.bikeRadius, 0, Math.PI * 2);
-            ctx.fillStyle = player.color;
+            ctx.arc(0, 10, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#1f2937';
             ctx.fill();
-
-            // Draw bike outline
-            ctx.strokeStyle = player.isLeading ? '#fff' : 'rgba(255, 255, 255, 0.5)';
-            ctx.lineWidth = player.isLeading ? 3 : 2;
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Draw player number
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 12px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(`${player.index + 1}`, x, y);
-
-            // Draw energy indicator (small arc around bike)
-            const energyAngle = (player.energy / cfg.maxEnergy) * Math.PI * 2;
+            // Front wheel
             ctx.beginPath();
-            ctx.arc(x, y, cfg.bikeRadius + 4, -Math.PI / 2, -Math.PI / 2 + energyAngle);
-            ctx.strokeStyle = player.energy < 20 ? '#ef4444' : player.color;
+            ctx.arc(0, -10, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#1f2937';
+            ctx.fill();
+            ctx.stroke();
+
+            // Bike frame (triangle-ish shape)
+            ctx.beginPath();
+            ctx.moveTo(0, 10);    // Back wheel
+            ctx.lineTo(-4, 0);    // Seat
+            ctx.lineTo(0, -8);    // Handlebars
+            ctx.lineTo(0, 10);    // Back to rear
+            ctx.strokeStyle = bikeColor;
             ctx.lineWidth = 3;
             ctx.stroke();
+
+            // Seat post
+            ctx.beginPath();
+            ctx.moveTo(-4, 0);
+            ctx.lineTo(-6, -2);
+            ctx.strokeStyle = bikeColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Cyclist body (circle for head, line for body)
+            ctx.beginPath();
+            ctx.arc(-3, -6, 5, 0, Math.PI * 2); // Head/torso
+            ctx.fillStyle = bikeColor;
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Handlebars
+            ctx.beginPath();
+            ctx.moveTo(-3, -8);
+            ctx.lineTo(3, -8);
+            ctx.strokeStyle = '#9ca3af';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.restore();
+
+            // Draw player number on cyclist
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const numX = x - Math.sin(bikeAngle) * 3;
+            const numY = y + Math.cos(bikeAngle) * 3 - 6;
+            ctx.fillText(`${player.index + 1}`, x, y - 6);
+
+            // Draw energy ring around bike
+            const energyAngle = (player.energy / cfg.maxEnergy) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.arc(x, y, 18, -Math.PI / 2, -Math.PI / 2 + energyAngle);
+
+            // Color based on state
+            if (player.isDrafting) {
+                // Bright green when drafting (gaining energy)
+                ctx.strokeStyle = '#22c55e';
+                ctx.lineWidth = 4;
+            } else if (player.energy < 20) {
+                // Red when low energy
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 3;
+            } else if (player.isLeading) {
+                // Orange when leading (losing energy faster)
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 3;
+            } else {
+                // Normal player color
+                ctx.strokeStyle = player.color;
+                ctx.lineWidth = 2;
+            }
+            ctx.stroke();
+
+            // Leader crown indicator
+            if (player.isLeading) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('👑', x, y - 22);
+            }
         });
     },
 
