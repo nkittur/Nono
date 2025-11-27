@@ -8,10 +8,9 @@ const Game = {
     config: {
         // Energy
         maxEnergy: 100,
-        pedalEnergyCost: 4,
-        baseEnergyRegen: 0.15, // per frame
-        draftingEnergyRegen: 0.8, // per frame when drafting
-        leadingEnergyDrain: 0.1, // extra drain when in front
+        pedalEnergyCost: 5,
+        baseEnergyRegen: 0.08, // per frame - very slow
+        draftingEnergyRegen: 0.5, // per frame when drafting - much faster
 
         // Speed
         baseSpeed: 0.003, // radians per frame
@@ -26,8 +25,8 @@ const Game = {
         maxLateralOffset: 0.3, // max lane offset (0 = center, ±0.3 = edges)
 
         // Drafting
-        draftingDistance: 0.15, // must be within this angle behind
-        draftingLaneThreshold: 0.15, // must be in similar lane
+        draftingDistance: 0.18, // must be within this angle behind (about 10 degrees)
+        draftingLaneThreshold: 0.12, // must be in similar lane
 
         // Track
         trackOuterRadius: 0.42, // relative to canvas
@@ -682,21 +681,17 @@ const Game = {
 
     /**
      * Update energy levels
+     * Simple logic:
+     * - Pedaling costs energy (handled in applyPedal)
+     * - Slow regen normally
+     * - Fast regen when drafting (close behind another bike)
      */
     updateEnergy() {
         const cfg = this.config;
 
         this.state.players.forEach((player, index) => {
-            // Energy regeneration
-            let regen = cfg.baseEnergyRegen;
-
-            if (player.isDrafting) {
-                regen = cfg.draftingEnergyRegen;
-            }
-
-            if (player.isLeading && this.state.players.length > 1) {
-                regen -= cfg.leadingEnergyDrain;
-            }
+            // Energy regeneration - simple: slow normally, fast when drafting
+            const regen = player.isDrafting ? cfg.draftingEnergyRegen : cfg.baseEnergyRegen;
 
             player.energy = Math.min(cfg.maxEnergy, player.energy + regen);
             player.energy = Math.max(0, player.energy);
@@ -994,33 +989,21 @@ const Game = {
             ctx.beginPath();
             ctx.arc(x, y, 18, -Math.PI / 2, -Math.PI / 2 + energyAngle);
 
-            // Color based on state
+            // Color based on state - simple: green if drafting, red if low, otherwise player color
             if (player.isDrafting) {
-                // Bright green when drafting (gaining energy)
+                // Bright green when drafting (energy boosting fast!)
                 ctx.strokeStyle = '#22c55e';
                 ctx.lineWidth = 4;
             } else if (player.energy < 20) {
-                // Red when low energy
+                // Red when low energy - need to draft!
                 ctx.strokeStyle = '#ef4444';
                 ctx.lineWidth = 3;
-            } else if (player.isLeading) {
-                // Orange when leading (losing energy faster)
-                ctx.strokeStyle = '#f97316';
-                ctx.lineWidth = 3;
             } else {
-                // Normal player color
+                // Normal - slow energy regen
                 ctx.strokeStyle = player.color;
                 ctx.lineWidth = 2;
             }
             ctx.stroke();
-
-            // Leader crown indicator
-            if (player.isLeading) {
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = '12px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('👑', x, y - 22);
-            }
         });
     },
 
