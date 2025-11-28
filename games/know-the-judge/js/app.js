@@ -161,21 +161,23 @@ class KnowTheJudge {
         // Shuffle items for display
         const shuffled = [...this.state.currentCategory.items].sort(() => Math.random() - 0.5);
 
-        shuffled.forEach(item => {
+        shuffled.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'rank-item';
+            div.dataset.index = index; // Use index instead of item text
             div.dataset.item = item;
             div.innerHTML = `<span class="item-text">${item}</span>`;
 
-            div.addEventListener('click', () => this.toggleItemRank(item, gridId, buttonId));
+            div.addEventListener('click', () => this.toggleItemRank(index, gridId, buttonId));
             grid.appendChild(div);
         });
     }
 
-    toggleItemRank(item, gridId, buttonId) {
+    toggleItemRank(itemIndex, gridId, buttonId) {
         const grid = document.getElementById(gridId);
         const button = document.getElementById(buttonId);
-        const itemEl = grid.querySelector(`[data-item="${item}"]`);
+        const itemEl = grid.querySelector(`[data-index="${itemIndex}"]`);
+        const item = itemEl.dataset.item;
 
         const existingIndex = this.state.currentRanking.indexOf(item);
 
@@ -187,13 +189,19 @@ class KnowTheJudge {
             this.state.currentRanking.push(item);
         }
 
+        // Rank colors
+        const rankColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444']; // green, blue, orange, red
+
         // Update all item visuals
         grid.querySelectorAll('.rank-item').forEach(el => {
             const itemName = el.dataset.item;
             const rankIndex = this.state.currentRanking.indexOf(itemName);
 
+            // Remove old rank classes
+            el.classList.remove('ranked', 'rank-1', 'rank-2', 'rank-3', 'rank-4');
+
             if (rankIndex !== -1) {
-                el.classList.add('ranked');
+                el.classList.add('ranked', `rank-${rankIndex + 1}`);
                 // Add or update badge
                 let badge = el.querySelector('.rank-badge');
                 if (!badge) {
@@ -202,8 +210,8 @@ class KnowTheJudge {
                     el.appendChild(badge);
                 }
                 badge.textContent = rankIndex + 1;
+                badge.style.background = rankColors[rankIndex];
             } else {
-                el.classList.remove('ranked');
                 const badge = el.querySelector('.rank-badge');
                 if (badge) badge.remove();
             }
