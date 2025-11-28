@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Emoji Telephone</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="screen active">
+            <h1>Emoji Telephone</h1>
+            <p class="tagline">How badly will your message get lost?</p>
+
+            <div class="player-setup">
+                <h2>How many players?</h2>
+                <div class="player-count-selector">
+                    <button class="count-btn" data-count="3">3</button>
+                    <button class="count-btn selected" data-count="4">4</button>
+                    <button class="count-btn" data-count="5">5</button>
+                    <button class="count-btn" data-count="6">6</button>
+                    <button class="count-btn" data-count="7">7</button>
+                    <button class="count-btn" data-count="8">8</button>
+                </div>
+            </div>
+
+            <button id="start-btn" class="primary-btn">Start Game</button>
+            <a href="../../" class="back-link">Back to Games</a>
+        </div>
+
+        <!-- First Player - See the Phrase -->
+        <div id="phrase-screen" class="screen">
+            <div class="player-header">
+                <span class="player-badge" id="phrase-player">Player 1</span>
+                <span class="turn-type">starts the chain!</span>
+            </div>
+
+            <p class="instruction">Turn this into emojis:</p>
+            <div class="phrase-display" id="phrase-display">The phrase goes here</div>
+
+            <p class="sub-instruction">Pass to yourself, then draw emojis</p>
+            <button id="ready-emoji-btn" class="primary-btn">I'm Ready</button>
+        </div>
+
+        <!-- Emoji Drawing Screen -->
+        <div id="emoji-screen" class="screen">
+            <div class="player-header">
+                <span class="player-badge" id="emoji-player">Player 1</span>
+                <span class="turn-type emoji-turn">drawing emojis</span>
+            </div>
+
+            <p class="instruction" id="emoji-instruction">Draw emojis for the phrase</p>
+
+            <div class="emoji-display" id="emoji-input-display"></div>
+
+            <div class="emoji-picker" id="emoji-picker"></div>
+
+            <div class="emoji-controls">
+                <button id="clear-emoji-btn" class="control-btn">Clear</button>
+                <button id="backspace-btn" class="control-btn">← Delete</button>
+            </div>
+
+            <button id="submit-emoji-btn" class="primary-btn" disabled>Done</button>
+        </div>
+
+        <!-- Pass Screen -->
+        <div id="pass-screen" class="screen">
+            <div class="pass-content">
+                <h2>Pass to:</h2>
+                <div class="next-player-name" id="next-player-name">Player 2</div>
+                <p class="pass-task" id="pass-task">to guess what it means</p>
+                <button id="ready-btn" class="primary-btn">I'm Ready</button>
+            </div>
+        </div>
+
+        <!-- Guess Screen -->
+        <div id="guess-screen" class="screen">
+            <div class="player-header">
+                <span class="player-badge" id="guess-player">Player 2</span>
+                <span class="turn-type guess-turn">guessing the phrase</span>
+            </div>
+
+            <p class="instruction">What does this mean?</p>
+            <div class="emoji-display shown" id="emoji-to-guess"></div>
+
+            <input type="text" id="guess-input" class="guess-input" placeholder="Type your guess..." autocomplete="off">
+
+            <button id="submit-guess-btn" class="primary-btn" disabled>Done</button>
+        </div>
+
+        <!-- Reveal Screen -->
+        <div id="reveal-screen" class="screen">
+            <h1>The Chain!</h1>
+
+            <div class="chain-container" id="chain-container"></div>
+
+            <button id="next-round-btn" class="primary-btn">Next Round</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen">
+            <h1>Game Over!</h1>
+            <p class="final-message">Hope you had some laughs!</p>
+
+            <button id="play-again-btn" class="primary-btn">Play Again</button>
+            <a href="../../" class="back-link">Back to Games</a>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

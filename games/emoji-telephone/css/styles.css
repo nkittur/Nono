@@ -1,0 +1,406 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+}
+
+.game-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 12px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    animation: fadeIn 0.3s ease;
+}
+
+.screen.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+h1 {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+h2 {
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #a0aec0;
+}
+
+.tagline {
+    text-align: center;
+    color: #a0aec0;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+/* Setup Screen */
+.player-setup {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.player-count-selector {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.count-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.count-btn.selected {
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    border-color: transparent;
+    transform: scale(1.1);
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #a0aec0;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* Player Header */
+.player-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.player-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #3498db, #9b59b6);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.turn-type {
+    display: block;
+    margin-top: 5px;
+    color: #a0aec0;
+    font-size: 0.9rem;
+}
+
+.turn-type.emoji-turn {
+    color: #f39c12;
+}
+
+.turn-type.guess-turn {
+    color: #2ecc71;
+}
+
+/* Instructions */
+.instruction {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.sub-instruction {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #a0aec0;
+    margin-top: 15px;
+}
+
+/* Phrase Display */
+.phrase-display {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #f39c12;
+    margin: 10px 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Emoji Display */
+.emoji-display {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 80px;
+    text-align: center;
+    font-size: 2.5rem;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.emoji-display.shown {
+    flex: 1;
+    font-size: 3rem;
+}
+
+/* Emoji Picker */
+.emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.emoji-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.emoji-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.emoji-btn:active {
+    transform: scale(0.95);
+}
+
+/* Emoji Controls */
+.emoji-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.control-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.control-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Pass Screen */
+.pass-content {
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.pass-content h2 {
+    color: #a0aec0;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.next-player-name {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #9b59b6, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 10px 0;
+}
+
+.pass-task {
+    color: #a0aec0;
+    font-size: 1rem;
+    margin-bottom: 30px;
+}
+
+/* Guess Input */
+.guess-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.guess-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.guess-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Reveal Screen */
+#reveal-screen {
+    overflow-y: auto;
+}
+
+.chain-container {
+    flex: 1;
+    overflow-y: auto;
+    margin: 10px 0;
+}
+
+.chain-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.chain-item.original {
+    background: rgba(46, 204, 113, 0.2);
+    border: 2px solid rgba(46, 204, 113, 0.5);
+}
+
+.chain-item.final {
+    background: rgba(231, 76, 60, 0.2);
+    border: 2px solid rgba(231, 76, 60, 0.5);
+}
+
+.chain-player {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    margin-bottom: 5px;
+}
+
+.chain-content {
+    font-size: 1.3rem;
+}
+
+.chain-content.emoji {
+    font-size: 2rem;
+}
+
+.chain-arrow {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 1.2rem;
+    margin: 5px 0;
+}
+
+/* Game Over */
+.final-message {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 1.1rem;
+    margin: 20px 0 40px;
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+    .emoji-picker {
+        max-height: 150px;
+    }
+
+    .emoji-display {
+        min-height: 60px;
+        font-size: 2rem;
+    }
+
+    .phrase-display {
+        padding: 15px;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-height: 600px) {
+    .emoji-picker {
+        max-height: 120px;
+        grid-template-columns: repeat(10, 1fr);
+    }
+
+    .emoji-btn {
+        font-size: 1.2rem;
+    }
+}
