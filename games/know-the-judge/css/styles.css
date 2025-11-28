@@ -4,39 +4,47 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    min-height: 100vh;
     color: #fff;
-    overflow-x: hidden;
 }
 
 .game-container {
     max-width: 500px;
     margin: 0 auto;
-    padding: 20px;
-    min-height: 100vh;
+    padding: 12px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .screen {
     display: none;
     animation: fadeIn 0.3s ease;
+    height: 100%;
+    display: none;
+    flex-direction: column;
 }
 
 .screen.active {
-    display: block;
+    display: flex;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     background: linear-gradient(135deg, #f39c12, #e74c3c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -44,14 +52,14 @@ h1 {
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     color: #a0aec0;
 }
 
 h3 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-align: center;
     color: #cbd5e0;
 }
@@ -59,42 +67,37 @@ h3 {
 .tagline {
     text-align: center;
     color: #a0aec0;
-    margin-bottom: 40px;
-    font-size: 1.1rem;
+    margin-bottom: 20px;
+    font-size: 1rem;
 }
 
 /* Setup Screen */
 .player-setup {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 25px;
-    margin-bottom: 30px;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
 .player-count-selector {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .count-btn {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
-}
-
-.count-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
 }
 
 .count-btn.selected {
@@ -104,23 +107,18 @@ h3 {
 }
 
 .primary-btn {
-    display: block;
     width: 100%;
-    padding: 18px 30px;
-    font-size: 1.3rem;
+    padding: 14px 20px;
+    font-size: 1.1rem;
     font-weight: bold;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #f39c12, #e74c3c);
     color: #fff;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    margin-top: 20px;
-}
-
-.primary-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+    transition: transform 0.2s;
+    margin-top: auto;
+    flex-shrink: 0;
 }
 
 .primary-btn:disabled {
@@ -131,74 +129,72 @@ h3 {
 .back-link {
     display: block;
     text-align: center;
-    margin-top: 25px;
+    margin-top: 15px;
     color: #a0aec0;
     text-decoration: none;
-    font-size: 0.95rem;
-}
-
-.back-link:hover {
-    color: #fff;
+    font-size: 0.9rem;
 }
 
 /* Judge Announcement */
 .judge-announcement {
     text-align: center;
-    padding-top: 60px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .round-indicator {
     color: #a0aec0;
-    font-size: 1rem;
-    margin-bottom: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
 }
 
 .judge-name, .next-player-name {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: bold;
     background: linear-gradient(135deg, #9b59b6, #3498db);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin: 30px 0;
+    margin: 20px 0;
 }
 
 .judge-instruction {
     color: #a0aec0;
-    font-size: 1.1rem;
-    margin-bottom: 40px;
-    line-height: 1.5;
+    font-size: 1rem;
+    margin-bottom: 30px;
 }
 
 /* Category Screen */
 .category-label {
     text-align: center;
     color: #a0aec0;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    margin-top: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    margin-top: 10px;
 }
 
 .category-title {
-    font-size: 1.8rem;
+    font-size: 1.3rem;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     color: #f39c12;
-    line-height: 1.3;
+    line-height: 1.2;
 }
 
 .items-display {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 15px;
 }
 
 .item-card {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 16px 20px;
-    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 12px 10px;
+    font-size: 0.95rem;
     text-align: center;
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
@@ -207,6 +203,7 @@ h3 {
     text-align: center;
     color: #a0aec0;
     margin-bottom: 10px;
+    font-size: 0.95rem;
 }
 
 .pass-instruction span {
@@ -217,18 +214,20 @@ h3 {
 /* Guessing Screen */
 .guesser-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 .whos-guessing {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: #3498db;
 }
 
 .guess-prompt {
     color: #a0aec0;
-    margin-top: 5px;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 2px;
 }
 
 .guess-prompt span {
@@ -239,154 +238,145 @@ h3 {
 .category-reminder {
     text-align: center;
     color: #f39c12;
-    margin-bottom: 25px;
-    font-size: 1.1rem;
+    margin-bottom: 8px;
+    font-size: 1rem;
 }
 
-.ranking-area {
-    margin-bottom: 20px;
+.tap-instruction {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
 }
 
-.rank-slots {
+/* Ranking Grid - The main interaction area */
+.ranking-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+    margin-bottom: 10px;
+}
+
+.rank-item {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 12px;
+    padding: 15px 10px;
+    font-size: 0.95rem;
+    text-align: center;
+    cursor: pointer;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.15s;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 25px;
-}
-
-.rank-slot {
-    display: flex;
     align-items: center;
-    gap: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 12px 15px;
-    min-height: 60px;
-    border: 2px dashed rgba(255, 255, 255, 0.2);
-    transition: all 0.2s;
-}
-
-.rank-slot.filled {
-    border-style: solid;
-    border-color: rgba(243, 156, 18, 0.5);
-    background: rgba(243, 156, 18, 0.1);
-}
-
-.rank-slot.drag-over {
-    border-color: #3498db;
-    background: rgba(52, 152, 219, 0.2);
-}
-
-.rank-label {
-    font-size: 0.85rem;
-    color: #a0aec0;
-    min-width: 80px;
-    font-weight: bold;
-}
-
-.slot-content {
-    flex: 1;
-    font-size: 1.1rem;
-    color: #fff;
-}
-
-.items-pool {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
     justify-content: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
+    position: relative;
     min-height: 80px;
-}
-
-.draggable-item {
-    background: linear-gradient(135deg, #2c3e50, #34495e);
-    border-radius: 10px;
-    padding: 12px 18px;
-    font-size: 1rem;
-    cursor: grab;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.2s;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.draggable-item:hover {
-    transform: scale(1.05);
+.rank-item:active {
+    transform: scale(0.97);
+}
+
+.rank-item.ranked {
     border-color: #f39c12;
+    background: linear-gradient(135deg, rgba(243, 156, 18, 0.3), rgba(231, 76, 60, 0.3));
 }
 
-.draggable-item.dragging {
-    opacity: 0.7;
-    cursor: grabbing;
+.rank-item .rank-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
-.draggable-item.placed {
-    display: none;
+.rank-item .item-text {
+    line-height: 1.2;
 }
 
 /* Pass Screen */
 .pass-content {
     text-align: center;
-    padding-top: 80px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .pass-content h2 {
     color: #2ecc71;
-    font-size: 2rem;
-    margin-bottom: 30px;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
 }
 
 .pass-content p {
     color: #a0aec0;
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 /* Judge Ranking Screen */
 .judge-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 .judge-header h2 {
     color: #9b59b6;
+    font-size: 1.3rem;
 }
 
-.judge-header p span {
-    color: #9b59b6;
-    font-weight: bold;
+.judge-header p {
+    color: #a0aec0;
+    font-size: 0.9rem;
 }
 
 /* Results Screen */
+#results-screen {
+    overflow-y: auto;
+}
+
 .results-container {
-    margin: 25px 0;
+    margin: 10px 0;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .results-category {
     color: #f39c12;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
 }
 
 .result-row {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
 }
 
 .result-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .result-player-name {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .result-player-name.judge {
@@ -395,26 +385,26 @@ h3 {
 
 .result-score {
     background: linear-gradient(135deg, #f39c12, #e74c3c);
-    padding: 5px 12px;
-    border-radius: 20px;
+    padding: 3px 10px;
+    border-radius: 15px;
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .result-ranking {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     flex-wrap: wrap;
 }
 
 .result-item {
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
 }
 
 .result-item .rank-num {
@@ -433,52 +423,49 @@ h3 {
 
 .winner-announcement {
     text-align: center;
-    padding: 20px;
+    padding: 12px;
     background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(39, 174, 96, 0.2));
-    border-radius: 16px;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    margin-bottom: 10px;
     border: 2px solid rgba(46, 204, 113, 0.5);
 }
 
 .winner-announcement h3 {
     color: #2ecc71;
-    font-size: 1.4rem;
-    margin-bottom: 10px;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
 }
 
 .winner-announcement .winner-names {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: #fff;
 }
 
 .scores-summary {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
 }
 
 .scores-summary h4 {
     text-align: center;
     color: #a0aec0;
-    margin-bottom: 15px;
-    font-size: 1rem;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
 }
 
 .score-row {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    padding: 5px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
 }
 
 .score-row:last-child {
     border-bottom: none;
-}
-
-.score-row .name {
-    font-weight: 500;
 }
 
 .score-row .points {
@@ -488,22 +475,22 @@ h3 {
 
 /* Game Over Screen */
 #gameover-screen h1 {
-    margin-top: 40px;
-    margin-bottom: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .final-scores {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .final-score-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 12px 15px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    margin-bottom: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
 }
 
 .final-score-row.first {
@@ -512,42 +499,62 @@ h3 {
 }
 
 .final-score-row .position {
-    font-size: 1.5rem;
-    width: 40px;
+    font-size: 1.3rem;
+    width: 35px;
 }
 
 .final-score-row .name {
     flex: 1;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
 }
 
 .final-score-row .points {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: #f39c12;
     font-weight: bold;
 }
 
-/* Mobile touch improvements */
-@media (max-width: 500px) {
+/* Ensure content fits on mobile */
+@media (max-height: 700px) {
     .game-container {
-        padding: 15px;
+        padding: 8px;
     }
 
     h1 {
-        font-size: 2rem;
-    }
-
-    .judge-name, .next-player-name {
-        font-size: 2.5rem;
-    }
-
-    .category-title {
         font-size: 1.5rem;
     }
 
-    .draggable-item {
-        padding: 10px 14px;
+    .judge-name, .next-player-name {
+        font-size: 2rem;
+        margin: 15px 0;
+    }
+
+    .rank-item {
+        min-height: 70px;
+        padding: 12px 8px;
+        font-size: 0.85rem;
+    }
+
+    .primary-btn {
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-height: 600px) {
+    .rank-item {
+        min-height: 60px;
+        padding: 10px 6px;
+    }
+
+    .category-reminder {
         font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .tap-instruction {
+        font-size: 0.75rem;
+        margin-bottom: 5px;
     }
 }
