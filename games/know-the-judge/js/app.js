@@ -13,8 +13,9 @@ class KnowTheJudge {
             guesses: {},
             judgeRanking: [],
             scores: {},
-            // Track current ranking being built
-            currentRanking: []
+            currentRanking: [],
+            activeGridId: null,
+            activeButtonId: null
         };
 
         this.categories = [
@@ -70,11 +71,10 @@ class KnowTheJudge {
         });
 
         document.getElementById('start-btn').addEventListener('click', () => this.startGame());
-        document.getElementById('show-category-btn').addEventListener('click', () => this.showCategory());
-        document.getElementById('start-guessing-btn').addEventListener('click', () => this.startGuessing());
-        document.getElementById('submit-guess-btn').addEventListener('click', () => this.submitGuess());
+        document.getElementById('show-category-btn').addEventListener('click', () => this.showJudgeRanking());
+        document.getElementById('judge-done-btn').addEventListener('click', () => this.submitJudgeRanking());
         document.getElementById('next-guesser-btn').addEventListener('click', () => this.nextGuesser());
-        document.getElementById('reveal-results-btn').addEventListener('click', () => this.revealResults());
+        document.getElementById('submit-guess-btn').addEventListener('click', () => this.submitGuess());
         document.getElementById('next-round-btn').addEventListener('click', () => this.nextRound());
         document.getElementById('play-again-btn').addEventListener('click', () => this.resetGame());
     }
@@ -114,47 +114,38 @@ class KnowTheJudge {
         return this.categories[categoryIndex];
     }
 
-    showCategory() {
+    showJudgeRanking() {
         this.state.currentCategory = this.getRandomCategory();
         this.state.guesses = {};
         this.state.judgeRanking = [];
 
-        document.getElementById('category-round-num').textContent = this.state.currentRound;
-        document.getElementById('category-title').textContent = this.state.currentCategory.title;
+        const judge = this.state.players[this.state.currentJudgeIndex];
+        document.getElementById('judge-name-rank').textContent = judge.name;
+        document.getElementById('judge-category-title').textContent = this.state.currentCategory.title;
 
-        const itemsDisplay = document.getElementById('items-display');
-        itemsDisplay.innerHTML = '';
-        this.state.currentCategory.items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'item-card';
-            div.textContent = item;
-            itemsDisplay.appendChild(div);
-        });
-
-        this.state.currentGuesserIndex = (this.state.currentJudgeIndex + 1) % this.state.playerCount;
-        const firstGuesser = this.state.players[this.state.currentGuesserIndex];
-        document.getElementById('first-guesser').textContent = firstGuesser.name;
-
-        this.showScreen('category-screen');
+        this.setupRankingGrid('judge-ranking-grid', 'judge-done-btn');
+        this.showScreen('judge-rank-screen');
     }
 
-    startGuessing() {
-        const guesser = this.state.players[this.state.currentGuesserIndex];
-        const judge = this.state.players[this.state.currentJudgeIndex];
+    submitJudgeRanking() {
+        // Save judge's ranking
+        this.state.judgeRanking = [...this.state.currentRanking];
 
-        document.getElementById('guesser-name').textContent = guesser.name;
-        document.getElementById('judge-name-prompt').textContent = judge.name;
-        document.getElementById('category-reminder').textContent = this.state.currentCategory.title;
+        // Set up first guesser
+        this.state.currentGuesserIndex = (this.state.currentJudgeIndex + 1) % this.state.playerCount;
+        const firstGuesser = this.state.players[this.state.currentGuesserIndex];
 
-        this.setupRankingGrid('ranking-grid', 'submit-guess-btn');
-        this.showScreen('guess-screen');
+        // Show pass screen
+        document.getElementById('pass-title').textContent = 'Pass to:';
+        document.getElementById('next-player-name').textContent = firstGuesser.name;
+        document.getElementById('pass-subtitle').textContent = 'to guess the judge\'s ranking';
+        this.showScreen('pass-screen');
     }
 
     setupRankingGrid(gridId, buttonId) {
         const grid = document.getElementById(gridId);
         const button = document.getElementById(buttonId);
 
-        // Store current grid context for event handler
         this.state.currentRanking = [];
         this.state.activeGridId = gridId;
         this.state.activeButtonId = buttonId;
@@ -162,7 +153,6 @@ class KnowTheJudge {
         grid.innerHTML = '';
         button.disabled = true;
 
-        // Shuffle items for display
         const shuffled = [...this.state.currentCategory.items].sort(() => Math.random() - 0.5);
 
         shuffled.forEach((item, index) => {
@@ -174,7 +164,6 @@ class KnowTheJudge {
             grid.appendChild(div);
         });
 
-        // Use event delegation - single click handler on grid
         grid.onclick = (e) => {
             const rankItem = e.target.closest('.rank-item');
             if (rankItem) {
@@ -191,17 +180,13 @@ class KnowTheJudge {
         const existingIndex = this.state.currentRanking.indexOf(item);
 
         if (existingIndex !== -1) {
-            // Remove this item and all items ranked after it
             this.state.currentRanking = this.state.currentRanking.slice(0, existingIndex);
         } else if (this.state.currentRanking.length < 4) {
-            // Add to ranking
             this.state.currentRanking.push(item);
         }
 
-        // Rank colors
         const rankColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
 
-        // Update all item visuals
         grid.querySelectorAll('.rank-item').forEach(el => {
             const itemName = el.dataset.item;
             const rankIndex = this.state.currentRanking.indexOf(itemName);
@@ -224,8 +209,19 @@ class KnowTheJudge {
             }
         });
 
-        // Enable button when all 4 are ranked
         button.disabled = this.state.currentRanking.length !== 4;
+    }
+
+    nextGuesser() {
+        const guesser = this.state.players[this.state.currentGuesserIndex];
+        const judge = this.state.players[this.state.currentJudgeIndex];
+
+        document.getElementById('guesser-name').textContent = guesser.name;
+        document.getElementById('judge-name-prompt').textContent = judge.name;
+        document.getElementById('category-reminder').textContent = this.state.currentCategory.title;
+
+        this.setupRankingGrid('ranking-grid', 'submit-guess-btn');
+        this.showScreen('guess-screen');
     }
 
     submitGuess() {
@@ -247,35 +243,17 @@ class KnowTheJudge {
         // Check if all guessers are done
         const guessCount = Object.keys(this.state.guesses).length;
         if (guessCount >= this.state.playerCount - 1) {
-            this.showJudgeRanking();
+            this.revealResults();
             return;
         }
 
         // Show pass screen
         this.state.currentGuesserIndex = nextGuesserIndex;
         const nextGuesser = this.state.players[nextGuesserIndex];
+        document.getElementById('pass-title').textContent = 'Pass to:';
         document.getElementById('next-player-name').textContent = nextGuesser.name;
+        document.getElementById('pass-subtitle').textContent = 'to guess the judge\'s ranking';
         this.showScreen('pass-screen');
-    }
-
-    nextGuesser() {
-        const guesser = this.state.players[this.state.currentGuesserIndex];
-        const judge = this.state.players[this.state.currentJudgeIndex];
-
-        document.getElementById('guesser-name').textContent = guesser.name;
-        document.getElementById('judge-name-prompt').textContent = judge.name;
-
-        this.setupRankingGrid('ranking-grid', 'submit-guess-btn');
-        this.showScreen('guess-screen');
-    }
-
-    showJudgeRanking() {
-        const judge = this.state.players[this.state.currentJudgeIndex];
-        document.getElementById('judge-name-final').textContent = judge.name;
-        document.getElementById('judge-category-reminder').textContent = this.state.currentCategory.title;
-
-        this.setupRankingGrid('judge-ranking-grid', 'reveal-results-btn');
-        this.showScreen('judge-rank-screen');
     }
 
     calculateScore(guess, actual) {
@@ -294,84 +272,87 @@ class KnowTheJudge {
     }
 
     revealResults() {
-        this.state.judgeRanking = [...this.state.currentRanking];
-
         document.getElementById('results-category').textContent = this.state.currentCategory.title;
 
         const container = document.getElementById('results-container');
         container.innerHTML = '';
 
-        // Judge's ranking first
-        const judgeRow = document.createElement('div');
-        judgeRow.className = 'result-row';
-        judgeRow.innerHTML = `
-            <div class="result-header">
-                <span class="result-player-name judge">${this.state.players[this.state.currentJudgeIndex].name} (Judge)</span>
-                <span class="result-score">THE TRUTH</span>
-            </div>
-            <div class="result-ranking">
-                ${this.state.judgeRanking.map((item, i) => `
-                    <div class="result-item correct"><span class="rank-num">${i + 1}.</span> ${item}</div>
-                `).join('')}
-            </div>
-        `;
-        container.appendChild(judgeRow);
-
-        // Calculate scores
+        // Calculate scores first
         const roundScores = [];
         for (const [playerIndex, guess] of Object.entries(this.state.guesses)) {
             const idx = parseInt(playerIndex);
             const player = this.state.players[idx];
             const score = this.calculateScore(guess, this.state.judgeRanking);
             this.state.scores[idx] += score;
-            roundScores.push({ player, score, guess });
+            roundScores.push({ player, score, guess, idx });
+        }
+        roundScores.sort((a, b) => b.score - a.score);
+
+        // Judge's ranking (the truth)
+        const judgeSection = document.createElement('div');
+        judgeSection.className = 'result-section judge-result';
+        judgeSection.innerHTML = `
+            <div class="result-label">${this.state.players[this.state.currentJudgeIndex].name}'s Ranking (The Truth)</div>
+            <div class="result-items">
+                ${this.state.judgeRanking.map((item, i) => `<span class="result-chip rank-${i + 1}">${i + 1}. ${item}</span>`).join('')}
+            </div>
+        `;
+        container.appendChild(judgeSection);
+
+        // Winner announcement
+        const maxScore = roundScores[0]?.score || 0;
+        const winners = roundScores.filter(r => r.score === maxScore);
+        if (maxScore > 0) {
+            const winnerDiv = document.createElement('div');
+            winnerDiv.className = 'winner-banner';
+            const names = winners.map(w => w.player.name).join(' & ');
+            winnerDiv.innerHTML = `<span class="winner-label">Best Mind Reader:</span> <span class="winner-name">${names}</span> <span class="winner-score">(+${maxScore})</span>`;
+            container.appendChild(winnerDiv);
         }
 
-        roundScores.sort((a, b) => b.score - a.score);
+        // All player guesses
+        const guessesSection = document.createElement('div');
+        guessesSection.className = 'all-guesses';
 
         roundScores.forEach(({ player, score, guess }) => {
             const row = document.createElement('div');
-            row.className = 'result-row';
+            row.className = 'guess-row';
             row.innerHTML = `
-                <div class="result-header">
-                    <span class="result-player-name">${player.name}</span>
-                    <span class="result-score">+${score} pts</span>
+                <div class="guess-header">
+                    <span class="guess-player">${player.name}</span>
+                    <span class="guess-score">+${score}</span>
                 </div>
-                <div class="result-ranking">
+                <div class="guess-items">
                     ${guess.map((item, i) => {
                         const isCorrect = item === this.state.judgeRanking[i];
-                        return `<div class="result-item ${isCorrect ? 'correct' : 'wrong'}"><span class="rank-num">${i + 1}.</span> ${item}</div>`;
+                        return `<span class="guess-chip ${isCorrect ? 'correct' : ''}">${i + 1}. ${item}</span>`;
                     }).join('')}
                 </div>
             `;
-            container.appendChild(row);
+            guessesSection.appendChild(row);
         });
-
-        // Winner
-        const maxScore = roundScores[0]?.score || 0;
-        const winners = roundScores.filter(r => r.score === maxScore);
-        const winnerDiv = document.getElementById('winner-announcement');
-
-        if (maxScore === 0) {
-            winnerDiv.innerHTML = `<h3>No matches!</h3><p>Better luck next round</p>`;
-        } else {
-            const names = winners.map(w => w.player.name).join(' & ');
-            winnerDiv.innerHTML = `<h3>Best Mind Reader${winners.length > 1 ? 's' : ''}!</h3><div class="winner-names">${names}</div>`;
-        }
+        container.appendChild(guessesSection);
 
         // Running scores
-        const scoresDiv = document.getElementById('scores-summary');
-        scoresDiv.innerHTML = '<h4>Total Scores</h4>';
+        const scoresSection = document.createElement('div');
+        scoresSection.className = 'scores-section';
+        scoresSection.innerHTML = '<div class="scores-title">Total Scores</div>';
+
         const sorted = Object.entries(this.state.scores)
             .map(([idx, score]) => ({ player: this.state.players[idx], score }))
             .sort((a, b) => b.score - a.score);
 
+        const scoresGrid = document.createElement('div');
+        scoresGrid.className = 'scores-grid';
         sorted.forEach(({ player, score }) => {
-            const row = document.createElement('div');
-            row.className = 'score-row';
-            row.innerHTML = `<span class="name">${player.name}</span><span class="points">${score} pts</span>`;
-            scoresDiv.appendChild(row);
+            scoresGrid.innerHTML += `<span class="score-name">${player.name}</span><span class="score-pts">${score}</span>`;
         });
+        scoresSection.appendChild(scoresGrid);
+        container.appendChild(scoresSection);
+
+        // Update button text
+        const btn = document.getElementById('next-round-btn');
+        btn.textContent = this.state.currentRound >= this.state.playerCount ? 'Finish Game' : 'Next Round';
 
         this.showScreen('results-screen');
     }
@@ -421,7 +402,9 @@ class KnowTheJudge {
             guesses: {},
             judgeRanking: [],
             scores: {},
-            currentRanking: []
+            currentRanking: [],
+            activeGridId: null,
+            activeButtonId: null
         };
         this.usedCategories = [];
 

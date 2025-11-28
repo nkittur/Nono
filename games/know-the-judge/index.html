@@ -35,21 +35,35 @@
                 <p class="round-indicator">Round <span id="round-num">1</span></p>
                 <h1>The Judge is...</h1>
                 <div class="judge-name" id="judge-name">Player 1</div>
-                <p class="judge-instruction">Everyone will guess how YOU would rank these!</p>
+                <p class="judge-instruction">Rank these items - others will guess your order!</p>
                 <button id="show-category-btn" class="primary-btn">Show Category</button>
             </div>
         </div>
 
-        <!-- Category Reveal Screen -->
-        <div id="category-screen" class="screen">
-            <p class="round-indicator">Round <span id="category-round-num">1</span></p>
-            <h2 class="category-label">Rank from BEST to WORST:</h2>
-            <h1 class="category-title" id="category-title">Category</h1>
+        <!-- Judge Ranking Screen (combined with category reveal) -->
+        <div id="judge-rank-screen" class="screen">
+            <div class="judge-header">
+                <span class="player-badge judge-badge" id="judge-name-rank">Player 1</span>
+                <span class="judge-subtitle">rank from BEST to WORST</span>
+            </div>
 
-            <div class="items-display" id="items-display"></div>
+            <h3 class="category-reminder" id="judge-category-title">Category</h3>
 
-            <p class="pass-instruction">Pass to <span id="first-guesser">Player 2</span></p>
-            <button id="start-guessing-btn" class="primary-btn">Ready to Guess</button>
+            <p class="tap-instruction">Tap items in order: 1st (best) to 4th (worst)</p>
+
+            <div class="ranking-grid" id="judge-ranking-grid"></div>
+
+            <button id="judge-done-btn" class="primary-btn" disabled>Lock In My Ranking</button>
+        </div>
+
+        <!-- Pass Device Screen -->
+        <div id="pass-screen" class="screen">
+            <div class="pass-content">
+                <h2 id="pass-title">Pass to:</h2>
+                <div class="next-player-name" id="next-player-name">Player 2</div>
+                <p class="pass-subtitle" id="pass-subtitle">to guess the judge's ranking</p>
+                <button id="next-guesser-btn" class="primary-btn">I'm Ready</button>
+            </div>
         </div>
 
         <!-- Guessing Screen -->
@@ -68,42 +82,12 @@
             <button id="submit-guess-btn" class="primary-btn" disabled>Lock In</button>
         </div>
 
-        <!-- Pass Device Screen -->
-        <div id="pass-screen" class="screen">
-            <div class="pass-content">
-                <h2>Locked in!</h2>
-                <p>Pass to:</p>
-                <div class="next-player-name" id="next-player-name">Player 3</div>
-                <button id="next-guesser-btn" class="primary-btn">I'm Ready</button>
-            </div>
-        </div>
-
-        <!-- Judge Ranking Screen -->
-        <div id="judge-rank-screen" class="screen">
-            <div class="judge-header">
-                <h2><span id="judge-name-final">Player 1</span>, your turn!</h2>
-                <p>Reveal YOUR true ranking</p>
-            </div>
-
-            <h3 class="category-reminder" id="judge-category-reminder">Category</h3>
-
-            <p class="tap-instruction">Tap items in order: 1st (best) to 4th (worst)</p>
-
-            <div class="ranking-grid" id="judge-ranking-grid"></div>
-
-            <button id="reveal-results-btn" class="primary-btn" disabled>Reveal Results!</button>
-        </div>
-
         <!-- Results Screen -->
         <div id="results-screen" class="screen">
             <h1>Results!</h1>
             <h3 class="results-category" id="results-category">Category</h3>
 
             <div class="results-container" id="results-container"></div>
-
-            <div class="winner-announcement" id="winner-announcement"></div>
-
-            <div class="scores-summary" id="scores-summary"></div>
 
             <button id="next-round-btn" class="primary-btn">Next Round</button>
         </div>
