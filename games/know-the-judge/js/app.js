@@ -154,7 +154,11 @@ class KnowTheJudge {
         const grid = document.getElementById(gridId);
         const button = document.getElementById(buttonId);
 
+        // Store current grid context for event handler
         this.state.currentRanking = [];
+        this.state.activeGridId = gridId;
+        this.state.activeButtonId = buttonId;
+
         grid.innerHTML = '';
         button.disabled = true;
 
@@ -164,20 +168,25 @@ class KnowTheJudge {
         shuffled.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'rank-item';
-            div.dataset.index = index; // Use index instead of item text
+            div.dataset.index = index;
             div.dataset.item = item;
             div.innerHTML = `<span class="item-text">${item}</span>`;
-
-            div.addEventListener('click', () => this.toggleItemRank(index, gridId, buttonId));
             grid.appendChild(div);
         });
+
+        // Use event delegation - single click handler on grid
+        grid.onclick = (e) => {
+            const rankItem = e.target.closest('.rank-item');
+            if (rankItem) {
+                this.handleRankClick(rankItem);
+            }
+        };
     }
 
-    toggleItemRank(itemIndex, gridId, buttonId) {
-        const grid = document.getElementById(gridId);
-        const button = document.getElementById(buttonId);
-        const itemEl = grid.querySelector(`[data-index="${itemIndex}"]`);
-        const item = itemEl.dataset.item;
+    handleRankClick(element) {
+        const grid = document.getElementById(this.state.activeGridId);
+        const button = document.getElementById(this.state.activeButtonId);
+        const item = element.dataset.item;
 
         const existingIndex = this.state.currentRanking.indexOf(item);
 
@@ -190,19 +199,17 @@ class KnowTheJudge {
         }
 
         // Rank colors
-        const rankColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444']; // green, blue, orange, red
+        const rankColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'];
 
         // Update all item visuals
         grid.querySelectorAll('.rank-item').forEach(el => {
             const itemName = el.dataset.item;
             const rankIndex = this.state.currentRanking.indexOf(itemName);
 
-            // Remove old rank classes
             el.classList.remove('ranked', 'rank-1', 'rank-2', 'rank-3', 'rank-4');
 
             if (rankIndex !== -1) {
                 el.classList.add('ranked', `rank-${rankIndex + 1}`);
-                // Add or update badge
                 let badge = el.querySelector('.rank-badge');
                 if (!badge) {
                     badge = document.createElement('div');
