@@ -325,13 +325,20 @@ const Game = {
      */
     startRotation() {
         this.stopRotation();
+        this.state.rotationDirection = Math.random() < 0.5 ? 1 : -1;
         this.state.rotationInterval = setInterval(() => {
-            this.state.rotationAngle += 2; // degrees per interval
+            // Randomly reverse direction occasionally
+            if (Math.random() < 0.02) {
+                this.state.rotationDirection *= -1;
+            }
+            this.state.rotationAngle += 6 * this.state.rotationDirection; // faster rotation
             if (this.state.rotationAngle >= 360) {
                 this.state.rotationAngle -= 360;
+            } else if (this.state.rotationAngle < 0) {
+                this.state.rotationAngle += 360;
             }
             this.redrawCanvas();
-        }, 100);
+        }, 50);
     },
 
     /**

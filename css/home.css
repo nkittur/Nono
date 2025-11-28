@@ -239,6 +239,7 @@
 .tile-brown { --tile-color: #9b5c34; }
 .tile-yellow { --tile-color: #eab308; }
 .tile-fuchsia { --tile-color: #d946ef; }
+.tile-teal { --tile-color: #14b8a6; }
 
 /* Tile Icon */
 .game-tile-icon {

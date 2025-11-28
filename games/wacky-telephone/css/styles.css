@@ -1,0 +1,581 @@
+/* ========================================
+   Wacky Telephone - Drawing Telephone Game
+   ======================================== */
+
+:root {
+    --wacky-primary: #06b6d4;
+    --wacky-primary-light: #22d3ee;
+    --wacky-primary-dark: #0891b2;
+    --wacky-accent: #8b5cf6;
+    --wacky-success: #10b981;
+}
+
+#app {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    flex: 1;
+    padding: var(--space-lg);
+    padding-top: calc(var(--space-lg) + var(--safe-area-top) + 50px);
+    padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+    animation: fadeIn var(--transition-normal);
+    overflow-y: auto;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.screen-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.screen-content.center-content {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.screen-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+/* ========================================
+   Setup Screen
+   ======================================== */
+
+.logo {
+    text-align: center;
+    margin-bottom: var(--space-md);
+}
+
+.logo-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: var(--space-sm);
+    animation: wobble 3s ease-in-out infinite;
+}
+
+@keyframes wobble {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    25% { transform: rotate(10deg) scale(1.05); }
+    50% { transform: rotate(-5deg) scale(1); }
+    75% { transform: rotate(5deg) scale(1.02); }
+}
+
+.logo-text {
+    font-size: 2.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--wacky-primary), var(--wacky-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tagline {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: var(--space-xl);
+}
+
+.rules-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.rules-card h2 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-md);
+    text-align: center;
+}
+
+.rules-list {
+    list-style: none;
+}
+
+.rules-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-xs) 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.rule-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.setup-section {
+    margin-bottom: var(--space-xl);
+}
+
+.setup-section h3 {
+    font-size: 1rem;
+    margin-bottom: var(--space-md);
+    text-align: center;
+}
+
+.player-count-selector {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.count-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.count-btn.selected {
+    background: linear-gradient(135deg, var(--wacky-primary), var(--wacky-accent));
+    border-color: transparent;
+    transform: scale(1.1);
+}
+
+/* Button overrides */
+#app .btn-primary {
+    background: var(--wacky-primary);
+}
+
+#app .btn-primary:hover {
+    background: var(--wacky-primary-dark);
+}
+
+.btn.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.5); }
+    50% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); }
+}
+
+/* ========================================
+   Phrase/Pass Screens
+   ======================================== */
+
+.pass-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-lg);
+}
+
+.pass-title {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.player-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--wacky-primary), var(--wacky-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-md);
+}
+
+.player-label {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-sm);
+}
+
+.player-label span {
+    color: var(--wacky-primary);
+}
+
+.instruction {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.pass-task {
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+.phrase-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 350px;
+}
+
+.phrase-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-md);
+}
+
+.phrase-text {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--wacky-primary);
+    line-height: 1.3;
+}
+
+.transform-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: linear-gradient(135deg, var(--wacky-primary), var(--wacky-accent));
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-sm);
+}
+
+.transform-emoji {
+    font-size: 1.3rem;
+}
+
+.transform-name {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.transform-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-xl);
+}
+
+/* ========================================
+   Drawing Screen
+   ======================================== */
+
+#draw-screen {
+    padding: var(--space-sm);
+    padding-top: calc(var(--space-sm) + var(--safe-area-top) + 50px);
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.draw-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-sm);
+}
+
+.draw-player {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.transform-indicator {
+    background: linear-gradient(135deg, var(--wacky-primary), var(--wacky-accent));
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.timer-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--wacky-primary);
+    background: rgba(6, 182, 212, 0.1);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+}
+
+.timer-display.warning {
+    color: var(--color-warning);
+    background: rgba(234, 179, 8, 0.2);
+}
+
+.timer-display.danger {
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.2);
+    animation: timerPulse 0.5s ease infinite;
+}
+
+@keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.canvas-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: var(--space-sm);
+    min-height: 0;
+}
+
+#draw-canvas, #display-canvas {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    touch-action: none;
+    cursor: crosshair;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.draw-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+    padding-bottom: var(--space-sm);
+}
+
+.btn-undo {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.btn-clear {
+    background: var(--bg-card-light);
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.btn-done {
+    background: var(--wacky-success);
+    color: white;
+    flex: 1.5;
+}
+
+.btn-undo:disabled {
+    opacity: 0.5;
+}
+
+/* ========================================
+   Guess Screen
+   ======================================== */
+
+#guess-screen .screen-content {
+    justify-content: flex-start;
+    padding-top: var(--space-md);
+}
+
+.guess-title {
+    font-size: 1.25rem;
+    text-align: center;
+    margin-bottom: var(--space-md);
+}
+
+.guess-title span {
+    color: var(--wacky-primary);
+}
+
+.drawing-display {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+    min-height: 200px;
+}
+
+.drawing-display canvas {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.guess-input-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.guess-input {
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    width: 100%;
+    text-align: center;
+}
+
+.guess-input:focus {
+    outline: none;
+    border-color: var(--wacky-primary);
+}
+
+.guess-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ========================================
+   Reveal Screen
+   ======================================== */
+
+.chain-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: var(--space-sm);
+}
+
+.chain-arrow {
+    color: var(--text-muted);
+    font-size: 1.5rem;
+}
+
+.chain-item {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+
+.chain-item.original {
+    border: 2px solid var(--wacky-primary);
+}
+
+.chain-item.final {
+    border: 2px solid var(--wacky-accent);
+}
+
+.chain-player {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+}
+
+.chain-content {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chain-content.phrase {
+    font-size: 1.1rem;
+    color: var(--wacky-primary);
+}
+
+.chain-drawing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.chain-drawing canvas {
+    background: white;
+    border-radius: var(--radius-md);
+    max-width: 150px;
+    max-height: 150px;
+}
+
+.chain-transform {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* ========================================
+   Game Over Screen
+   ======================================== */
+
+.victory-celebration {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.victory-emoji {
+    font-size: 3rem;
+    animation: celebrate 1s ease-in-out infinite;
+}
+
+.victory-emoji:nth-child(1) { animation-delay: 0s; }
+.victory-emoji:nth-child(2) { animation-delay: 0.2s; }
+.victory-emoji:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes celebrate {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-10px) rotate(-5deg); }
+    75% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.victory-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--wacky-primary), var(--wacky-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-sm);
+}
+
+.victory-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xl);
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 380px) {
+    .logo-text {
+        font-size: 1.9rem;
+    }
+
+    .phrase-text {
+        font-size: 1.5rem;
+    }
+
+    .player-name {
+        font-size: 2rem;
+    }
+}

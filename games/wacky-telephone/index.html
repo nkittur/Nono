@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Wacky Telephone - Drawing telephone with crazy transformations!">
+    <meta name="theme-color" content="#06b6d4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Wacky Telephone - Drawing Telephone!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🎨</span>
+                    <h1 class="logo-text">Wacky Telephone</h1>
+                </div>
+                <p class="tagline">Drawing Telephone with Crazy Twists!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">📝</span> First player sees a phrase</li>
+                        <li><span class="rule-icon">🎨</span> Draw it with a wacky transformation!</li>
+                        <li><span class="rule-icon">🤔</span> Next player guesses what it is</li>
+                        <li><span class="rule-icon">🔄</span> Alternate drawing and guessing</li>
+                        <li><span class="rule-icon">😂</span> See how the phrase evolved!</li>
+                    </ul>
+                </div>
+
+                <div class="setup-section">
+                    <h3>How many players?</h3>
+                    <div class="player-count-selector">
+                        <button class="count-btn" data-count="3">3</button>
+                        <button class="count-btn selected" data-count="4">4</button>
+                        <button class="count-btn" data-count="5">5</button>
+                        <button class="count-btn" data-count="6">6</button>
+                        <button class="count-btn" data-count="7">7</button>
+                        <button class="count-btn" data-count="8">8</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-large" id="start-btn">Start Game</button>
+            </div>
+        </div>
+
+        <!-- Phrase Screen (first player sees this) -->
+        <div id="phrase-screen" class="screen">
+            <div class="screen-content center-content">
+                <div class="pass-icon">📝</div>
+                <h2 class="player-label"><span id="phrase-player">Player 1</span></h2>
+                <p class="instruction">You start the chain!</p>
+
+                <div class="phrase-card">
+                    <div class="phrase-label">Draw this phrase:</div>
+                    <div class="phrase-text" id="phrase-display">A cat eating pizza</div>
+                </div>
+
+                <div class="transform-badge" id="phrase-transform-badge">
+                    <span class="transform-emoji" id="phrase-transform-emoji">🪞</span>
+                    <span class="transform-name" id="phrase-transform-name">Mirror Mode</span>
+                </div>
+                <p class="transform-desc" id="phrase-transform-desc">Your strokes are horizontally flipped!</p>
+
+                <button class="btn btn-primary btn-large" id="ready-draw-btn">Start Drawing</button>
+            </div>
+        </div>
+
+        <!-- Drawing Screen -->
+        <div id="draw-screen" class="screen">
+            <div class="draw-header">
+                <div class="draw-player" id="draw-player">Player 1</div>
+                <div class="transform-indicator" id="draw-transform">🪞 Mirror</div>
+                <div class="timer-display" id="draw-timer">45</div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="draw-canvas"></canvas>
+            </div>
+
+            <div class="draw-actions">
+                <button class="btn btn-undo" id="undo-btn">↩ Undo</button>
+                <button class="btn btn-clear" id="clear-btn">Clear</button>
+                <button class="btn btn-done" id="done-btn">Done ✓</button>
+            </div>
+        </div>
+
+        <!-- Pass Screen -->
+        <div id="pass-screen" class="screen">
+            <div class="screen-content center-content">
+                <div class="pass-icon">📱</div>
+                <h2 class="pass-title">Pass to</h2>
+                <div class="player-name" id="next-player-name">Player 2</div>
+                <p class="pass-task" id="pass-task">to guess the drawing</p>
+
+                <button class="btn btn-primary btn-large pulse" id="ready-btn">I'm Ready!</button>
+            </div>
+        </div>
+
+        <!-- Guess Screen -->
+        <div id="guess-screen" class="screen">
+            <div class="screen-content">
+                <h2 class="guess-title"><span id="guess-player">Player 2</span>, what is this?</h2>
+
+                <div class="drawing-display">
+                    <canvas id="display-canvas"></canvas>
+                </div>
+
+                <div class="guess-input-area">
+                    <input type="text" id="guess-input" class="guess-input" placeholder="Type your guess..." autocomplete="off">
+                    <button class="btn btn-primary" id="submit-guess-btn" disabled>Submit Guess</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Draw Screen (player sees the guess and must draw) -->
+        <div id="next-draw-screen" class="screen">
+            <div class="screen-content center-content">
+                <div class="pass-icon">🎨</div>
+                <h2 class="player-label"><span id="next-draw-player">Player 3</span></h2>
+                <p class="instruction">Draw this guess:</p>
+
+                <div class="phrase-card">
+                    <div class="phrase-label">Draw:</div>
+                    <div class="phrase-text" id="next-draw-phrase">Pizza cat</div>
+                </div>
+
+                <div class="transform-badge" id="next-draw-transform-badge">
+                    <span class="transform-emoji" id="next-draw-transform-emoji">🔄</span>
+                    <span class="transform-name" id="next-draw-transform-name">Spin Mode</span>
+                </div>
+                <p class="transform-desc" id="next-draw-transform-desc">The canvas spins as you draw!</p>
+
+                <button class="btn btn-primary btn-large" id="next-draw-btn">Start Drawing</button>
+            </div>
+        </div>
+
+        <!-- Reveal Screen -->
+        <div id="reveal-screen" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">The Chain!</h2>
+
+                <div class="chain-container" id="chain-container">
+                    <!-- Chain items populated by JS -->
+                </div>
+
+                <button class="btn btn-primary btn-large" id="next-round-btn">Next Round</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen">
+            <div class="screen-content center-content">
+                <div class="victory-celebration">
+                    <span class="victory-emoji">🎨</span>
+                    <span class="victory-emoji">📞</span>
+                    <span class="victory-emoji">🎭</span>
+                </div>
+                <h1 class="victory-title">Great Game!</h1>
+                <p class="victory-subtitle">What hilarious chains did you create?</p>
+
+                <button class="btn btn-primary btn-large" id="play-again-btn">Play Again</button>
+                <a href="../../" class="btn btn-secondary">All Games</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/prompts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

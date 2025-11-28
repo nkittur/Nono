@@ -88,7 +88,7 @@ const TRANSFORMATIONS = {
     rotate: {
         name: "Spin Mode",
         emoji: "🔄",
-        description: "The canvas slowly rotates as you draw!"
+        description: "The canvas spins fast and randomly reverses!"
     },
     kaleidoscope: {
         name: "Kaleidoscope",
