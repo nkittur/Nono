@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Wacky Canvas - Draw with crazy transformations!">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Wacky Canvas - Transformed Drawing!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🎭</span>
+                    <h1 class="logo-text">Wacky Canvas</h1>
+                </div>
+                <p class="tagline">Draw with Crazy Transformations!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">🎨</span> Each player draws their word</li>
+                        <li><span class="rule-icon">🪞</span> But the canvas is transformed!</li>
+                        <li><span class="rule-icon">🔄</span> Mirror, rotate, kaleidoscope & more</li>
+                        <li><span class="rule-icon">🎯</span> Everyone guesses each drawing</li>
+                        <li><span class="rule-icon">⏱️</span> Beat the clock to score!</li>
+                    </ul>
+                </div>
+
+                <div class="transform-preview">
+                    <div class="transform-item">
+                        <span class="transform-icon">🪞</span>
+                        <span class="transform-label">Mirror</span>
+                    </div>
+                    <div class="transform-item">
+                        <span class="transform-icon">🔄</span>
+                        <span class="transform-label">Rotate</span>
+                    </div>
+                    <div class="transform-item">
+                        <span class="transform-icon">🔮</span>
+                        <span class="transform-label">Kaleidoscope</span>
+                    </div>
+                    <div class="transform-item">
+                        <span class="transform-icon">🌀</span>
+                        <span class="transform-label">Funhouse</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Let's Draw!
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Game Setup</h2>
+
+                <div class="setup-section">
+                    <h3>How many players?</h3>
+                    <div class="player-count-selector">
+                        <button class="count-btn" data-count="2">2</button>
+                        <button class="count-btn" data-count="3">3</button>
+                        <button class="count-btn selected" data-count="4">4</button>
+                        <button class="count-btn" data-count="5">5</button>
+                        <button class="count-btn" data-count="6">6</button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>Categories</h3>
+                    <p class="setup-hint">Select at least one</p>
+                    <div class="category-grid" id="category-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" onclick="Game.startGame()">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pass Device Screen (for drawing) -->
+        <div id="screen-pass" class="screen">
+            <div class="screen-content center-content">
+                <div class="pass-icon">🎨</div>
+                <h2 class="pass-title">Pass to</h2>
+                <div class="player-name" id="pass-player-name">Player 1</div>
+                <p class="pass-hint">Only this player should see the next screen!</p>
+
+                <div class="round-info">
+                    <span id="pass-round-info">Round 1 of 4</span>
+                </div>
+
+                <button class="btn btn-primary btn-large pulse" onclick="Game.showWord()">
+                    Show My Word
+                </button>
+            </div>
+        </div>
+
+        <!-- Word Reveal Screen -->
+        <div id="screen-word" class="screen">
+            <div class="screen-content center-content">
+                <div class="word-reveal-card">
+                    <div class="word-label">Draw this:</div>
+                    <div class="word-text" id="word-text">Pizza</div>
+                </div>
+
+                <div class="transform-reveal">
+                    <div class="transform-badge" id="transform-badge">
+                        <span class="transform-emoji" id="transform-emoji">🪞</span>
+                        <span class="transform-name" id="transform-name">Mirror Mode</span>
+                    </div>
+                    <p class="transform-desc" id="transform-desc">Your strokes are horizontally flipped!</p>
+                </div>
+
+                <div class="time-preview">
+                    <span class="time-icon">⏱️</span>
+                    <span class="time-value">45</span>
+                    <span class="time-label">seconds</span>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.startDrawing()">
+                    Start Drawing!
+                </button>
+            </div>
+        </div>
+
+        <!-- Drawing Screen -->
+        <div id="screen-draw" class="screen">
+            <div class="draw-header">
+                <div class="draw-player" id="draw-player">Player 1</div>
+                <div class="transform-indicator" id="draw-transform">🪞 Mirror</div>
+                <div class="timer-display" id="draw-timer">45</div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="draw-canvas"></canvas>
+                <div class="canvas-message" id="canvas-message"></div>
+            </div>
+
+            <div class="draw-actions">
+                <button class="btn btn-undo" onclick="Game.undoStroke()" id="undo-btn">
+                    ↩ Undo
+                </button>
+                <button class="btn btn-clear" onclick="Game.clearCanvas()">
+                    Clear
+                </button>
+                <button class="btn btn-done" onclick="Game.finishDrawing()">
+                    Done ✓
+                </button>
+            </div>
+        </div>
+
+        <!-- Transition to Guessing -->
+        <div id="screen-guess-intro" class="screen">
+            <div class="screen-content center-content">
+                <div class="guess-intro-icon">🎯</div>
+                <h2 class="guess-intro-title">Time to Guess!</h2>
+                <p class="guess-intro-text">Everyone drew their picture.<br>Now guess what each one is!</p>
+
+                <div class="drawings-count">
+                    <span id="drawings-count">4</span> drawings to guess
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.startGuessing()">
+                    Start Guessing
+                </button>
+            </div>
+        </div>
+
+        <!-- Guessing Screen -->
+        <div id="screen-guess" class="screen">
+            <div class="guess-header">
+                <div class="guess-info">
+                    <span class="guess-artist" id="guess-artist">Player 1's drawing</span>
+                    <span class="guess-transform" id="guess-transform">🪞 Mirror Mode</span>
+                </div>
+                <div class="timer-display" id="guess-timer">30</div>
+            </div>
+
+            <div class="canvas-display">
+                <canvas id="display-canvas"></canvas>
+            </div>
+
+            <div class="guess-actions">
+                <button class="btn btn-wrong" onclick="Game.markWrong()">
+                    ✗ Skip
+                </button>
+                <button class="btn btn-correct" onclick="Game.markCorrect()">
+                    ✓ Got It!
+                </button>
+            </div>
+        </div>
+
+        <!-- Answer Reveal -->
+        <div id="screen-answer" class="screen">
+            <div class="screen-content center-content">
+                <div class="answer-icon" id="answer-icon">🎉</div>
+                <h2 class="answer-title" id="answer-title">Correct!</h2>
+
+                <div class="answer-word-card">
+                    <span class="answer-label">The word was:</span>
+                    <span class="answer-word" id="answer-word">Pizza</span>
+                </div>
+
+                <div class="answer-artist">
+                    Drawn by <span id="answer-artist">Player 1</span>
+                    <span class="answer-transform" id="answer-transform">using Mirror Mode</span>
+                </div>
+
+                <div class="score-update">
+                    <span id="score-text">Score: 3 / 4</span>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.nextGuess()" id="next-guess-btn">
+                    Next Drawing
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="screen-results" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Round Complete!</h2>
+
+                <div class="results-summary">
+                    <div class="result-stat">
+                        <span class="result-value" id="results-correct">3</span>
+                        <span class="result-label">Correct</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-value" id="results-total">4</span>
+                        <span class="result-label">Total</span>
+                    </div>
+                </div>
+
+                <div class="results-grid" id="results-grid">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
+                        Play Again
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../../'">
+                        All Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/prompts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
