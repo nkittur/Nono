@@ -229,6 +229,7 @@
 /* Tile Color Variants */
 .tile-red { --tile-color: #ef4444; }
 .tile-amber { --tile-color: #f59e0b; }
+.tile-orange { --tile-color: #f97316; }
 .tile-emerald { --tile-color: #10b981; }
 .tile-violet { --tile-color: #8b5cf6; }
 .tile-purple { --tile-color: #a855f7; }

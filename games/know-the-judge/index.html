@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=height, maximum-scale=1.0, user-scalable=no">
+    <title>Know the Judge</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="screen active">
+            <h1>Know the Judge</h1>
+            <p class="tagline">Can you guess how they'd rank these?</p>
+
+            <div class="player-setup">
+                <h2>How many players?</h2>
+                <div class="player-count-selector">
+                    <button class="count-btn" data-count="3">3</button>
+                    <button class="count-btn selected" data-count="4">4</button>
+                    <button class="count-btn" data-count="5">5</button>
+                    <button class="count-btn" data-count="6">6</button>
+                    <button class="count-btn" data-count="7">7</button>
+                    <button class="count-btn" data-count="8">8</button>
+                </div>
+            </div>
+
+            <button id="start-btn" class="primary-btn">Start Game</button>
+
+            <a href="../../" class="back-link">Back to Games</a>
+        </div>
+
+        <!-- Judge Announcement Screen -->
+        <div id="judge-screen" class="screen">
+            <div class="judge-announcement">
+                <p class="round-indicator">Round <span id="round-num">1</span></p>
+                <h1>The Judge is...</h1>
+                <div class="judge-name" id="judge-name">Player 1</div>
+                <p class="judge-instruction">Everyone will guess how YOU would rank these 4 things!</p>
+                <button id="show-category-btn" class="primary-btn">Show Category</button>
+            </div>
+        </div>
+
+        <!-- Category Reveal Screen -->
+        <div id="category-screen" class="screen">
+            <p class="round-indicator">Round <span id="category-round-num">1</span></p>
+            <h2 class="category-label">Rank from BEST to WORST:</h2>
+            <h1 class="category-title" id="category-title">Category</h1>
+
+            <div class="items-display" id="items-display">
+                <!-- Items will be inserted here -->
+            </div>
+
+            <p class="pass-instruction">Pass to <span id="first-guesser">Player 2</span> to start guessing!</p>
+            <button id="start-guessing-btn" class="primary-btn">Ready to Guess</button>
+        </div>
+
+        <!-- Guessing Screen -->
+        <div id="guess-screen" class="screen">
+            <div class="guesser-header">
+                <p class="whos-guessing"><span id="guesser-name">Player 2</span>'s turn</p>
+                <p class="guess-prompt">How would <span id="judge-name-prompt">the judge</span> rank these?</p>
+            </div>
+
+            <h3 class="category-reminder" id="category-reminder">Category</h3>
+
+            <div class="ranking-area">
+                <div class="rank-slots" id="rank-slots">
+                    <div class="rank-slot" data-rank="1">
+                        <span class="rank-label">1st (Best)</span>
+                        <div class="slot-content"></div>
+                    </div>
+                    <div class="rank-slot" data-rank="2">
+                        <span class="rank-label">2nd</span>
+                        <div class="slot-content"></div>
+                    </div>
+                    <div class="rank-slot" data-rank="3">
+                        <span class="rank-label">3rd</span>
+                        <div class="slot-content"></div>
+                    </div>
+                    <div class="rank-slot" data-rank="4">
+                        <span class="rank-label">4th (Worst)</span>
+                        <div class="slot-content"></div>
+                    </div>
+                </div>
+
+                <div class="items-pool" id="items-pool">
+                    <!-- Draggable items will be here -->
+                </div>
+            </div>
+
+            <button id="submit-guess-btn" class="primary-btn" disabled>Lock In Guess</button>
+        </div>
+
+        <!-- Pass Device Screen -->
+        <div id="pass-screen" class="screen">
+            <div class="pass-content">
+                <h2>Guess locked in!</h2>
+                <p>Pass the device to:</p>
+                <div class="next-player-name" id="next-player-name">Player 3</div>
+                <button id="next-guesser-btn" class="primary-btn">I'm Ready</button>
+            </div>
+        </div>
+
+        <!-- Judge Ranking Screen -->
+        <div id="judge-rank-screen" class="screen">
+            <div class="judge-header">
+                <h2>Judge's Turn!</h2>
+                <p><span id="judge-name-final">Player 1</span>, reveal YOUR true ranking!</p>
+            </div>
+
+            <h3 class="category-reminder" id="judge-category-reminder">Category</h3>
+
+            <div class="ranking-area">
+                <div class="rank-slots" id="judge-rank-slots">
+                    <div class="rank-slot" data-rank="1">
+                        <span class="rank-label">1st (Best)</span>
+                        <div class="slot-content"></div>
+                    </div>
+                    <div class="rank-slot" data-rank="2">
+                        <span class="rank-label">2nd</span>
+                        <div class="slot-content"></div>
+                    </div>
+                    <div class="rank-slot" data-rank="3">
+                        <span class="rank-label">3rd</span>
+                        <div class="slot-content"></div>
+                    </div>
+                    <div class="rank-slot" data-rank="4">
+                        <span class="rank-label">4th (Worst)</span>
+                        <div class="slot-content"></div>
+                    </div>
+                </div>
+
+                <div class="items-pool" id="judge-items-pool">
+                    <!-- Draggable items will be here -->
+                </div>
+            </div>
+
+            <button id="reveal-results-btn" class="primary-btn" disabled>Reveal Results!</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <h1>The Results!</h1>
+            <h3 class="results-category" id="results-category">Category</h3>
+
+            <div class="results-container" id="results-container">
+                <!-- Results will be inserted here -->
+            </div>
+
+            <div class="winner-announcement" id="winner-announcement">
+                <!-- Winner info here -->
+            </div>
+
+            <div class="scores-summary" id="scores-summary">
+                <!-- Running scores here -->
+            </div>
+
+            <button id="next-round-btn" class="primary-btn">Next Round</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen">
+            <h1>Game Over!</h1>
+
+            <div class="final-scores" id="final-scores">
+                <!-- Final scores here -->
+            </div>
+
+            <button id="play-again-btn" class="primary-btn">Play Again</button>
+            <a href="../../" class="back-link">Back to Games</a>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
