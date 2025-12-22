@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="2 Truths and a Lie - Can your team spot the fake fact?">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>2 Truths and a Lie - Spot the Fake!</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤥</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content">
+                <div class="logo">
+                    <span class="logo-icon">🤥</span>
+                    <h1 class="logo-text">2 Truths & a Lie</h1>
+                </div>
+                <p class="tagline">Strange facts that sound fake... and one that is!</p>
+
+                <div class="rules-card">
+                    <h2>How to Play</h2>
+                    <ul class="rules-list">
+                        <li><span class="rule-icon">🎯</span> You'll see 3 statements - 2 true, 1 false</li>
+                        <li><span class="rule-icon">🤔</span> Work together as a team to find the lie</li>
+                        <li><span class="rule-icon">✅</span> Tap the statement you think is fake</li>
+                        <li><span class="rule-icon">🔗</span> See sources proving the truths!</li>
+                        <li><span class="rule-icon">🏆</span> Score points for each correct guess</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="Game.showSetup()">
+                    Choose Topic
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Pick Your Topic</h2>
+
+                <div class="topic-section">
+                    <h3>What do you want to learn about?</h3>
+                    <div class="topic-grid" id="topic-grid">
+                        <!-- Topics rendered by JS -->
+                    </div>
+                </div>
+
+                <div class="selected-topic">
+                    <p class="selected-topic-label">Selected topic:</p>
+                    <p class="selected-topic-display" id="selected-topic-display">Choose a topic</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                    <button class="btn btn-primary" id="start-btn" onclick="Game.startGame()" disabled>
+                        Start Game
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="screen-game" class="screen">
+            <div class="screen-content">
+                <div class="game-header">
+                    <div class="round-indicator">
+                        <span class="round-label">Round</span>
+                        <span class="round-number"><span id="round-number">1</span>/10</span>
+                    </div>
+                    <div class="score-indicator">
+                        <span class="score-label">Score</span>
+                        <span class="score-value" id="score-display">0</span>
+                    </div>
+                </div>
+
+                <div class="game-instruction">
+                    <h2>Which one is the LIE?</h2>
+                    <p>Two of these are true. One is made up.</p>
+                </div>
+
+                <div class="statements-container" id="statements-container">
+                    <!-- Statement cards rendered by JS -->
+                </div>
+
+                <button class="btn btn-primary btn-large" id="submit-btn" onclick="Game.submitAnswer()" disabled>
+                    Which is the LIE?
+                </button>
+            </div>
+        </div>
+
+        <!-- Reveal Screen -->
+        <div id="screen-reveal" class="screen">
+            <div class="screen-content">
+                <div class="reveal-result" id="reveal-result">
+                    <div class="reveal-icon" id="reveal-icon">🎉</div>
+                    <p class="reveal-text" id="reveal-text">You found the lie!</p>
+                    <p class="current-score" id="current-score">Score: 1/1</p>
+                </div>
+
+                <div class="reveal-container" id="reveal-container">
+                    <!-- Reveal cards rendered by JS -->
+                </div>
+
+                <button class="btn btn-primary btn-large" id="next-btn" onclick="Game.nextRound()">
+                    Next Round
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="screen-results" class="screen">
+            <div class="screen-content center-content">
+                <div class="results-icon">🏆</div>
+                <h1 class="results-title">Game Complete!</h1>
+
+                <div class="final-score" id="final-score">7/10</div>
+
+                <div class="score-bar-container">
+                    <div class="score-bar" id="score-bar" style="width: 0%"></div>
+                </div>
+
+                <p class="score-message" id="score-message">Great job spotting those lies!</p>
+
+                <div class="results-buttons">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">
+                        Play Again
+                    </button>
+                    <button class="btn btn-secondary" onclick="Game.changeTopic()">
+                        Change Topic
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../../'">
+                        All Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/facts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
