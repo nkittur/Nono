@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Trivia Showdown - Party Games</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="stylesheet" href="../../css/shared.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a href="../../" class="home-btn" title="Back to Games">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <div class="screen-content center-content">
+                <div class="logo">
+                    <div class="logo-icon">🧠</div>
+                    <h1 class="logo-text">Trivia Showdown</h1>
+                    <p class="tagline">Test your knowledge!</p>
+                </div>
+
+                <div class="rules-card">
+                    <h3>How to Play</h3>
+                    <ol class="rules-list">
+                        <li>Two teams compete head-to-head</li>
+                        <li>Questions cover 80s, 90s, history & pop culture</li>
+                        <li>Teams take turns answering questions</li>
+                        <li>Correct answers earn points</li>
+                        <li>First team to the target score wins!</li>
+                    </ol>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.showSetup()">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="screen-setup" class="screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Game Setup</h2>
+
+                <div class="setup-section">
+                    <label class="setup-label">Team 1 Name</label>
+                    <input type="text" id="team1-name" class="text-input" placeholder="Team 1" maxlength="20">
+                </div>
+
+                <div class="setup-section">
+                    <label class="setup-label">Team 2 Name</label>
+                    <input type="text" id="team2-name" class="text-input" placeholder="Team 2" maxlength="20">
+                </div>
+
+                <div class="setup-section">
+                    <label class="setup-label">Points to Win</label>
+                    <div class="option-grid">
+                        <button class="btn btn-option" data-target="5">5</button>
+                        <button class="btn btn-option active" data-target="10">10</button>
+                        <button class="btn btn-option" data-target="15">15</button>
+                        <button class="btn btn-option" data-target="20">20</button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <label class="setup-label">Categories</label>
+                    <div class="category-grid" id="category-grid">
+                        <!-- Categories populated by JS -->
+                    </div>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.startGame()">Let's Play!</button>
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="screen-question" class="screen">
+            <div class="screen-content">
+                <div class="game-header">
+                    <div class="team-score team1-score">
+                        <span class="team-name" id="display-team1">Team 1</span>
+                        <span class="score-value" id="score-team1">0</span>
+                    </div>
+                    <div class="question-counter">
+                        <span id="question-number">1</span>
+                    </div>
+                    <div class="team-score team2-score">
+                        <span class="team-name" id="display-team2">Team 2</span>
+                        <span class="score-value" id="score-team2">0</span>
+                    </div>
+                </div>
+
+                <div class="current-turn">
+                    <span id="current-team">Team 1</span>'s Turn
+                </div>
+
+                <div class="category-badge" id="question-category">Category</div>
+
+                <div class="question-card">
+                    <p class="question-text" id="question-text">Question goes here?</p>
+                </div>
+
+                <div class="answers-grid" id="answers-grid">
+                    <!-- Answers populated by JS -->
+                </div>
+
+                <div class="timer-bar">
+                    <div class="timer-fill" id="timer-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer Result Screen -->
+        <div id="screen-result" class="screen">
+            <div class="screen-content center-content">
+                <div class="result-icon" id="result-icon">✓</div>
+                <h2 class="result-title" id="result-title">Correct!</h2>
+                <p class="result-answer" id="result-answer">The answer was: Answer</p>
+
+                <div class="score-update">
+                    <div class="team-result team1-result">
+                        <span class="team-name" id="result-team1">Team 1</span>
+                        <span class="score-value" id="result-score1">0</span>
+                    </div>
+                    <div class="vs-divider">vs</div>
+                    <div class="team-result team2-result">
+                        <span class="team-name" id="result-team2">Team 2</span>
+                        <span class="score-value" id="result-score2">0</span>
+                    </div>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.nextQuestion()">Next Question</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="screen-victory" class="screen">
+            <div class="screen-content center-content">
+                <div class="victory-icon">🏆</div>
+                <h2 class="victory-title" id="victory-title">Team Wins!</h2>
+                <p class="victory-subtitle">Trivia Champions!</p>
+
+                <div class="final-scores">
+                    <div class="final-score">
+                        <span class="team-name" id="final-team1">Team 1</span>
+                        <span class="score-value" id="final-score1">0</span>
+                    </div>
+                    <div class="final-score">
+                        <span class="team-name" id="final-team2">Team 2</span>
+                        <span class="score-value" id="final-score2">0</span>
+                    </div>
+                </div>
+
+                <div class="game-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="stat-questions">0</span>
+                        <span class="stat-label">Questions</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="stat-accuracy">0%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                </div>
+
+                <div class="button-group vertical">
+                    <button class="btn btn-primary btn-large" onclick="Game.playAgain()">Play Again</button>
+                    <button class="btn btn-secondary" onclick="Game.showWelcome()">New Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
