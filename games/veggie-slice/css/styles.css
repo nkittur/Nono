@@ -1,7 +1,6 @@
 /* Veggie Slice - Game-specific styles */
 
 * {
-    touch-action: none;
     -webkit-user-select: none;
     user-select: none;
 }
@@ -20,6 +19,8 @@
     padding-top: calc(var(--space-lg) + var(--safe-area-top) + 50px);
     padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
     animation: fadeIn var(--transition-normal);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .screen.active {
@@ -219,6 +220,11 @@
     width: 100%;
     height: 100%;
     display: block;
+    touch-action: none;
+}
+
+#screen-game {
+    overflow: hidden;
 }
 
 #game-hud {
